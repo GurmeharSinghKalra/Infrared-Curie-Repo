@@ -1,0 +1,30 @@
+esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/revision.c.obj: \
+ /home/gurmehar/esp/esp-idf/components/esp_hw_support/revision.c \
+ /home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/config/sdkconfig.h \
+ /home/gurmehar/esp/esp-idf/components/esp_common/include/esp_assert.h \
+ /home/gurmehar/esp/esp-idf/components/newlib/platform_include/assert.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/stdlib.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/machine/ieeefp.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/_ansi.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/newlib.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/_newlib_version.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/sys/config.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/sys/features.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/lib/gcc/xtensa-esp-elf/13.2.0/include/stddef.h \
+ /home/gurmehar/esp/esp-idf/components/newlib/platform_include/sys/reent.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/sys/reent.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/_ansi.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/sys/_types.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/machine/_types.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/machine/_default_types.h \
+ /home/gurmehar/esp/esp-idf/components/newlib/platform_include/sys/lock.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/sys/lock.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/sys/cdefs.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/machine/stdlib.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/alloca.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/sys/_locale.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/lib/gcc/xtensa-esp-elf/13.2.0/include/stdint.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/stdint.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/sys/_intsup.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/sys/_stdint.h \
+ /home/gurmehar/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20250707/xtensa-esp-elf/xtensa-esp-elf/include/assert.h
