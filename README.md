@@ -9,6 +9,8 @@ Infrared Curie is an ESP32-based expressive robot platform with:
 - AP-first local dashboard
 - handheld ESP32 controller over ESP-NOW
 
+Legacy code in this repository is from Google Antigravity; the current V6 robot/controller targets and release bundle were added by Codex.
+
 ## Current primary firmware targets
 
 ### Robot
