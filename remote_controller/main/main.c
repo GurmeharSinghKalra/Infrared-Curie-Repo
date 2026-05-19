@@ -75,6 +75,9 @@ static int64_t s_joy_button_press_us = 0;
 static bool s_joy_long_handled = false;
 static bool s_joy_combo_used = false;
 static uint8_t s_last_logged_dpad_mask = 0xFF;
+static int s_joy_center_x = 2048;
+static int s_joy_center_y = 2048;
+static int64_t s_last_input_log_us = 0;
 
 // ADC handle
 static adc_oneshot_unit_handle_t s_adc_unit = NULL;
@@ -100,17 +103,72 @@ static uint8_t clamp_to_byte(int value) {
     return (uint8_t)value;
 }
 
-static uint8_t analog_to_axis_byte(int raw, bool invert) {
-    const int center = 2048;
-    const int deadzone = 450;
-    if (abs(raw - center) <= deadzone) {
+static uint8_t analog_to_axis_byte(int raw, int center, bool invert) {
+    const int deadzone = 520;
+    int delta = raw - center;
+    if (abs(delta) <= deadzone) {
         return 128;
     }
-    int adjusted = (raw * 255) / 4095;
+
+    int adjusted = 128;
+    if (delta > 0) {
+        int span = 4095 - center - deadzone;
+        if (span < 1) span = 1;
+        adjusted = 128 + ((delta - deadzone) * 127) / span;
+    } else {
+        int span = center - deadzone;
+        if (span < 1) span = 1;
+        adjusted = 128 - (((-delta) - deadzone) * 128) / span;
+    }
+
     if (invert) {
         adjusted = 255 - adjusted;
     }
     return clamp_to_byte(adjusted);
+}
+
+static void calibrate_joystick(void) {
+    int sum_x = 0;
+    int sum_y = 0;
+    const int samples = 48;
+
+    ESP_LOGI(TAG, "Calibrating joystick neutral. Keep stick centered.");
+    for (int i = 0; i < samples; i++) {
+        int raw_x = 2048;
+        int raw_y = 2048;
+        adc_oneshot_read(s_adc_unit, ADC_CHANNEL_4, &raw_x);
+        adc_oneshot_read(s_adc_unit, ADC_CHANNEL_5, &raw_y);
+        sum_x += raw_x;
+        sum_y += raw_y;
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+
+    s_joy_center_x = sum_x / samples;
+    s_joy_center_y = sum_y / samples;
+    ESP_LOGI(TAG, "Joystick neutral calibrated: x=%d y=%d", s_joy_center_x, s_joy_center_y);
+}
+
+static void log_input_snapshot(int raw_x, int raw_y, uint8_t dpad, uint8_t throttle, uint8_t steering, uint8_t buttons) {
+    int64_t now = esp_timer_get_time();
+    if (dpad == 0 && buttons == 0 && (now - s_last_input_log_us) < 3000000) {
+        return;
+    }
+    if ((now - s_last_input_log_us) < 500000) {
+        return;
+    }
+    s_last_input_log_us = now;
+    ESP_LOGI(TAG,
+             "Input tx: raw_x=%d raw_y=%d center_x=%d center_y=%d dpad=0x%02x throttle=%u steering=%u buttons=0x%02x expr=%u speed=%u",
+             raw_x,
+             raw_y,
+             s_joy_center_x,
+             s_joy_center_y,
+             dpad,
+             throttle,
+             steering,
+             buttons,
+             s_pending_expression,
+             s_speed_mode);
 }
 
 static const char *expression_label(uint8_t id) {
@@ -195,8 +253,7 @@ static uint8_t read_dpad_mask(void) {
     return mask;
 }
 
-static void apply_dpad_override(uint8_t *throttle, uint8_t *steering) {
-    uint8_t dpad = read_dpad_mask();
+static void apply_dpad_override(uint8_t dpad, uint8_t *throttle, uint8_t *steering) {
     bool up = (dpad & (1 << 0)) != 0;
     bool right = (dpad & (1 << 1)) != 0;
     bool down = (dpad & (1 << 2)) != 0;
@@ -526,6 +583,7 @@ static void main_loop_task(void *arg) {
 #if CONTROLLER_BATTERY_ADC_ENABLED
     ESP_ERROR_CHECK(adc_oneshot_config_channel(s_adc_unit, ADC_CHANNEL_6, &chan_config)); // GPIO 34
 #endif
+    calibrate_joystick();
 
     ESP_LOGI(TAG, "Keypad, Buttons, and ADC initialized");
 
@@ -548,17 +606,19 @@ static void main_loop_task(void *arg) {
         // 4. Send Packet if connected
         if (s_connected && s_chr_value_handle != 0) {
             uint8_t packet[8] = {0};
+            uint8_t dpad = read_dpad_mask();
             packet[0] = CURIE_BLE_MAGIC;
-            packet[1] = analog_to_axis_byte(raw_y, true);  // Throttle
-            packet[2] = analog_to_axis_byte(raw_x, false); // Steering
+            packet[1] = analog_to_axis_byte(raw_y, s_joy_center_y, true);  // Throttle
+            packet[2] = analog_to_axis_byte(raw_x, s_joy_center_x, false); // Steering
             if (!s_joy_button_down) {
-                apply_dpad_override(&packet[1], &packet[2]);
+                apply_dpad_override(dpad, &packet[1], &packet[2]);
             }
             packet[3] = collect_buttons();
             packet[4] = s_pending_expression;
             packet[5] = s_speed_mode;
             packet[6] = s_sequence++;
             packet[7] = checksum_xor(packet);
+            log_input_snapshot(raw_x, raw_y, dpad, packet[1], packet[2], packet[3]);
 
             int rc = ble_gattc_write_no_rsp_flat(s_conn_handle, s_chr_value_handle, packet, sizeof(packet));
             if (rc != 0) {

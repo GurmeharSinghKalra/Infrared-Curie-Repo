@@ -37,6 +37,8 @@ This controller does not join the robot Wi-Fi. It scans for the robot's BLE serv
 - short press on `JOY_SW` = cycle speed mode
 - long press on `JOY_SW` = clear estop
 - hold `JOY_SW` and use the D-pad = arm/safety combo actions
+- firmware calibrates joystick neutral during boot, so keep the stick centered for the first half-second after reset
+- serial diagnostics print calibrated center, raw joystick values, D-pad mask, throttle, steering, buttons, expression, and speed
 
 ## Diamond buttons
 
@@ -67,6 +69,15 @@ Hold `JOY_SW`, then press a D-pad button:
 | `JOY_SW + RIGHT` | estop |
 
 Wire each D-pad button from GPIO to `GND` and use the internal pull-up.
+
+If `DOWN` or `LEFT` do not work, check serial for the `Drive buttons` or `Input tx` line. A pressed button must pull its GPIO to `0` and change the D-pad mask:
+
+```text
+UP    -> bit 0 -> 0x01
+RIGHT -> bit 1 -> 0x02
+DOWN  -> bit 2 -> 0x04
+LEFT  -> bit 3 -> 0x08
+```
 
 ## OLED display
 

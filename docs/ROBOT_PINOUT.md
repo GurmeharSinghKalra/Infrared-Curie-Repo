@@ -24,6 +24,8 @@ The motion layer treats:
 
 ### Motor driver outputs
 
+Motor drivers are assumed to be `BTS7960` modules, one driver per motor.
+
 | Motor | RPWM | LPWM | Physical position |
 |---|---:|---:|---|
 | `M1` | `GPIO25` | `GPIO26` | front-left |
@@ -57,6 +59,18 @@ The firmware uses two independent I2C buses.
 | `MISO` | not used |
 
 The current mouth hardware is a dual 8x8 daisy-chained MAX7219 assembly.
+
+## Motor direction diagnostic
+
+With the current physical orientation, the left-side motors are inverted in firmware so the dashboard/controller can use normal tank-drive commands.
+
+If `M3`/rear-left works in forward but fails in backward or left-turn commands, check this exact path first:
+
+```text
+ESP32 GPIO13 -> M3_RPWM -> rear-left BTS7960 RPWM input
+```
+
+That symptom means the rear-left driver can spin one direction, but the reverse-side input is not being driven or not reaching the BTS7960. Firmware cannot make a BTS7960 reverse a motor if one of that motor driver's two input paths is disconnected, on the wrong pin, or damaged.
 
 ## Network defaults
 

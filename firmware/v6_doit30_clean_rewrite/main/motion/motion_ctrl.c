@@ -3,7 +3,6 @@
 #include "state/robot_state.h"
 #include "esp_log.h"
 #include "driver/ledc.h"
-#include "driver/mcpwm_prelude.h"
 #include <stdlib.h>
 #include "driver/gpio.h"
 
@@ -17,7 +16,8 @@ static const int RAMP_STEPS[] = {
     [PROFILE_AGGRESSIVE] = 25,
 };
 
-static mcpwm_cmpr_handle_t cmp_ls, cmp_rs;
+static const ledc_channel_t SERVO_LEFT_CHANNEL = LEDC_CHANNEL_0;
+static const ledc_channel_t SERVO_RIGHT_CHANNEL = LEDC_CHANNEL_1;
 
 static int clamp_int(int value, int min, int max) {
     if (value < min) return min;
@@ -25,46 +25,52 @@ static int clamp_int(int value, int min, int max) {
     return value;
 }
 
-static mcpwm_cmpr_handle_t setup_servo(int pin, int group_id) {
-    gpio_reset_pin(pin);
-    mcpwm_timer_handle_t timer = NULL;
-    mcpwm_timer_config_t tcfg = {
-        .group_id = group_id,
-        .clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT,
-        .resolution_hz = 1000000,
-        .period_ticks = 20000,
-        .count_mode = MCPWM_TIMER_COUNT_MODE_UP,
-    };
-    ESP_ERROR_CHECK(mcpwm_new_timer(&tcfg, &timer));
-
-    mcpwm_oper_handle_t oper = NULL;
-    mcpwm_operator_config_t ocfg = {.group_id = group_id};
-    ESP_ERROR_CHECK(mcpwm_new_operator(&ocfg, &oper));
-    ESP_ERROR_CHECK(mcpwm_operator_connect_timer(oper, timer));
-
-    mcpwm_cmpr_handle_t comp = NULL;
-    mcpwm_comparator_config_t ccfg = {.flags.update_cmp_on_tez = true};
-    ESP_ERROR_CHECK(mcpwm_new_comparator(oper, &ccfg, &comp));
-
-    mcpwm_gen_handle_t gen = NULL;
-    mcpwm_generator_config_t gcfg = {.gen_gpio_num = pin};
-    ESP_ERROR_CHECK(mcpwm_new_generator(oper, &gcfg, &gen));
-
-    ESP_ERROR_CHECK(mcpwm_comparator_set_compare_value(comp, 1500));
-    ESP_ERROR_CHECK(mcpwm_generator_set_action_on_timer_event(gen,
-        MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH)));
-    ESP_ERROR_CHECK(mcpwm_generator_set_action_on_compare_event(gen,
-        MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comp, MCPWM_GEN_ACTION_LOW)));
-
-    ESP_ERROR_CHECK(mcpwm_timer_enable(timer));
-    ESP_ERROR_CHECK(mcpwm_timer_start_stop(timer, MCPWM_TIMER_START_NO_STOP));
-    return comp;
-}
-
-static void set_servo_angle(mcpwm_cmpr_handle_t comp, int angle) {
+static uint32_t servo_angle_to_duty(int angle) {
     angle = clamp_int(angle, 0, 180);
     uint32_t usec = 500 + (angle * 2000 / 180);
-    mcpwm_comparator_set_compare_value(comp, usec);
+    return (usec * ((1U << 16) - 1U)) / 20000U;
+}
+
+static void setup_servos(void) {
+    gpio_reset_pin(CURIE_LEFT_SHOULDER_GPIO);
+    gpio_reset_pin(CURIE_RIGHT_SHOULDER_GPIO);
+
+    ledc_timer_config_t timer = {
+        .speed_mode = LEDC_HIGH_SPEED_MODE,
+        .timer_num = LEDC_TIMER_1,
+        .duty_resolution = LEDC_TIMER_16_BIT,
+        .freq_hz = 50,
+        .clk_cfg = LEDC_AUTO_CLK,
+    };
+    ESP_ERROR_CHECK(ledc_timer_config(&timer));
+
+    ledc_channel_config_t left = {
+        .speed_mode = LEDC_HIGH_SPEED_MODE,
+        .channel = SERVO_LEFT_CHANNEL,
+        .timer_sel = LEDC_TIMER_1,
+        .intr_type = LEDC_INTR_DISABLE,
+        .gpio_num = CURIE_LEFT_SHOULDER_GPIO,
+        .duty = servo_angle_to_duty(90),
+        .hpoint = 0,
+    };
+    ESP_ERROR_CHECK(ledc_channel_config(&left));
+
+    ledc_channel_config_t right = {
+        .speed_mode = LEDC_HIGH_SPEED_MODE,
+        .channel = SERVO_RIGHT_CHANNEL,
+        .timer_sel = LEDC_TIMER_1,
+        .intr_type = LEDC_INTR_DISABLE,
+        .gpio_num = CURIE_RIGHT_SHOULDER_GPIO,
+        .duty = servo_angle_to_duty(90),
+        .hpoint = 0,
+    };
+    ESP_ERROR_CHECK(ledc_channel_config(&right));
+}
+
+static void set_servo_angle(ledc_channel_t channel, int angle) {
+    uint32_t duty = servo_angle_to_duty(angle);
+    ESP_ERROR_CHECK(ledc_set_duty(LEDC_HIGH_SPEED_MODE, channel, duty));
+    ESP_ERROR_CHECK(ledc_update_duty(LEDC_HIGH_SPEED_MODE, channel));
 }
 
 static void init_motors(void) {
@@ -171,13 +177,12 @@ static robot_drive_t drive_from_direction(robot_dir_t dir, int speed) {
 void task_motion(void *arg) {
     ESP_LOGI(TAG, "Initializing motion system for %s", CURIE_BOARD_NAME);
 
-    cmp_ls = setup_servo(CURIE_LEFT_SHOULDER_GPIO, 0);
-    cmp_rs = setup_servo(CURIE_RIGHT_SHOULDER_GPIO, 1);
+    setup_servos();
 
     int cur_ls = 90;
     int cur_rs = 90;
-    set_servo_angle(cmp_ls, cur_ls);
-    set_servo_angle(cmp_rs, cur_rs);
+    set_servo_angle(SERVO_LEFT_CHANNEL, cur_ls);
+    set_servo_angle(SERVO_RIGHT_CHANNEL, cur_rs);
 
     init_motors();
 
@@ -208,11 +213,11 @@ void task_motion(void *arg) {
             int new_rs = step_toward(cur_rs, arms.rs, SERVO_STEP_DEG);
 
             if (new_ls != cur_ls) {
-                set_servo_angle(cmp_ls, new_ls);
+                set_servo_angle(SERVO_LEFT_CHANNEL, new_ls);
                 cur_ls = new_ls;
             }
             if (new_rs != cur_rs) {
-                set_servo_angle(cmp_rs, new_rs);
+                set_servo_angle(SERVO_RIGHT_CHANNEL, new_rs);
                 cur_rs = new_rs;
             }
         }
