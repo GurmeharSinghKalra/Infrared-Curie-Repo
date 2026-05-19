@@ -282,7 +282,9 @@ static void render_mouth(robot_expression_t exp, int phase){
         uint8_t custom[16]; robot_get_custom_mouth(custom);
         int ld=CURIE_MOUTH_SWAP_HALVES?1:0, rd=CURIE_MOUTH_SWAP_HALVES?0:1;
         for(int r=0;r<8;r++){
-            uint8_t lb=custom[r], rb=custom[8+r];
+            int slr=CURIE_MOUTH_LEFT_FLIP_ROWS?(7-r):r;
+            int srr=CURIE_MOUTH_RIGHT_FLIP_ROWS?(7-r):r;
+            uint8_t lb=custom[slr], rb=custom[8+srr];
             if(CURIE_MOUTH_LEFT_FLIP_COLS) lb=rev8(lb);
             if(CURIE_MOUTH_RIGHT_FLIP_COLS) rb=rev8(rb);
             lb &= MOUTH_MASK_LEFT[r]; rb &= MOUTH_MASK_RIGHT[r];

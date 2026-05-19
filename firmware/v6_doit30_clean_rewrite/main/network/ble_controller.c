@@ -49,6 +49,8 @@ static int s_left_shoulder_target = ARM_HOME_DEG;
 static bool s_estop_sent = false;
 static uint8_t own_addr_type;
 
+static int ble_gap_event(struct ble_gap_event *event, void *arg);
+
 static int clamp_int(int value, int min, int max) {
     if (value < min) return min;
     if (value > max) return max;
@@ -201,13 +203,17 @@ static void process_packet(const uint8_t *data) {
 static int ble_gatt_svr_chr_access(uint16_t conn_handle, uint16_t attr_handle,
                                    struct ble_gatt_access_ctxt *ctxt,
                                    void *arg) {
+    (void)conn_handle;
+    (void)attr_handle;
+    (void)arg;
+
     if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR) {
         int len = OS_MBUF_PKTLEN(ctxt->om);
         if (len == CURIE_BLE_PACKET_SIZE && s_rx_queue) {
             ble_rx_msg_t msg = {0};
             msg.len = len;
             os_mbuf_copydata(ctxt->om, 0, len, msg.data);
-            xQueueSendFromISR(s_rx_queue, &msg, NULL);
+            xQueueSend(s_rx_queue, &msg, 0);
         }
     }
     return 0;
@@ -262,9 +268,36 @@ static void ble_app_advertise(void) {
     adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
     adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
     rc = ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER,
-                           &adv_params, NULL, NULL);
+                           &adv_params, ble_gap_event, NULL);
     if (rc != 0) {
         ESP_LOGE(TAG, "Error starting advertisement: %d", rc);
+    }
+}
+
+static int ble_gap_event(struct ble_gap_event *event, void *arg) {
+    (void)arg;
+
+    switch (event->type) {
+        case BLE_GAP_EVENT_CONNECT:
+            if (event->connect.status == 0) {
+                ESP_LOGI(TAG, "BLE controller connected");
+            } else {
+                ESP_LOGW(TAG, "BLE connect failed: %d", event->connect.status);
+                ble_app_advertise();
+            }
+            return 0;
+
+        case BLE_GAP_EVENT_DISCONNECT:
+            ESP_LOGI(TAG, "BLE controller disconnected");
+            ble_app_advertise();
+            return 0;
+
+        case BLE_GAP_EVENT_ADV_COMPLETE:
+            ble_app_advertise();
+            return 0;
+
+        default:
+            return 0;
     }
 }
 

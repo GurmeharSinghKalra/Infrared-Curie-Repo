@@ -48,13 +48,14 @@
 #define CURIE_MAX7219_CLK_GPIO  18
 #define CURIE_MAX7219_CS_GPIO    5
 
-// Mouth display transform. These defaults match the current dual 8x8 daisy-chained
-// mouth hardware with upright-facing matrices.
-#define CURIE_MOUTH_SWAP_HALVES      0
+// Mouth display transform. Data enters the physical right module first, then
+// cascades into the physical left module, so logical left/right must be swapped.
+// The modules are mounted upright, so row/column flips are left disabled.
+#define CURIE_MOUTH_SWAP_HALVES      1
 #define CURIE_MOUTH_LEFT_FLIP_ROWS   0
-#define CURIE_MOUTH_LEFT_FLIP_COLS   1
+#define CURIE_MOUTH_LEFT_FLIP_COLS   0
 #define CURIE_MOUTH_RIGHT_FLIP_ROWS  0
-#define CURIE_MOUTH_RIGHT_FLIP_COLS  1
+#define CURIE_MOUTH_RIGHT_FLIP_COLS  0
 
 // In-place turn scaling. Turning at reduced speed is more robust on the current
 // drivetrain than commanding both sides to full opposing duty.
