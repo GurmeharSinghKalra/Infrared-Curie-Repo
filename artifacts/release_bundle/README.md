@@ -37,7 +37,6 @@ Both production images target:
 - does not join the robot AP
 - scans for the robot over BLE
 - joystick drives the robot
-- D-pad gives digital drive override
 - hold joystick press + D-pad for shoulders/home/estop
 - keypad selects expression pages
 - optional OLED on `GPIO13/14` shows connection and actions

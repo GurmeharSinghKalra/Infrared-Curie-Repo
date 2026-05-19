@@ -6,6 +6,7 @@
 
 #define NUM_ROWS 4
 #define NUM_COLS 4
+#define KEYPAD_DEBOUNCE_COUNT 2
 
 static const gpio_num_t row_pins[NUM_ROWS] = {GPIO_NUM_19, GPIO_NUM_18, GPIO_NUM_5, GPIO_NUM_17};
 static const gpio_num_t col_pins[NUM_COLS] = {GPIO_NUM_16, GPIO_NUM_4, GPIO_NUM_2, GPIO_NUM_15};
@@ -17,7 +18,9 @@ static const char key_map[NUM_ROWS][NUM_COLS] = {
   {'*', '0', '#', 'D'}
 };
 
-static bool prev_state[NUM_ROWS][NUM_COLS];
+static char s_last_raw_key = '\0';
+static char s_last_reported_key = '\0';
+static uint8_t s_stable_count = 0;
 
 void keypad_init(void) {
     // Configure row pins as inputs with pull-ups
@@ -45,36 +48,53 @@ void keypad_init(void) {
         gpio_set_level(col_pins[c], 1);
     }
 
-    // Initialize state
-    for (int r = 0; r < NUM_ROWS; r++) {
-        for (int c = 0; c < NUM_COLS; c++) {
-            prev_state[r][c] = false;
-        }
-    }
+    s_last_raw_key = '\0';
+    s_last_reported_key = '\0';
+    s_stable_count = 0;
 }
 
 char keypad_get_key(void) {
     char detected_key = '\0';
 
     for (int c = 0; c < NUM_COLS; c++) {
-        // Set column pin low to scan it
         gpio_set_level(col_pins[c], 0);
-        ets_delay_us(10); // line stabilization delay
+        ets_delay_us(25);
 
         for (int r = 0; r < NUM_ROWS; r++) {
-            int val = gpio_get_level(row_pins[r]);
-            bool pressed = (val == 0); // Active Low
-
-            if (pressed && !prev_state[r][c]) {
-                // Key transition: not pressed -> pressed
+            if (gpio_get_level(row_pins[r]) == 0) {
                 detected_key = key_map[r][c];
+                break;
             }
-            prev_state[r][c] = pressed;
         }
 
-        // Set column back to High
         gpio_set_level(col_pins[c], 1);
+        if (detected_key != '\0') {
+            break;
+        }
     }
 
+    if (detected_key == s_last_raw_key) {
+        if (s_stable_count < 0xFF) {
+            s_stable_count++;
+        }
+    } else {
+        s_last_raw_key = detected_key;
+        s_stable_count = detected_key == '\0' ? 0 : 1;
+    }
+
+    if (detected_key == '\0') {
+        s_last_reported_key = '\0';
+        return '\0';
+    }
+
+    if (s_stable_count < KEYPAD_DEBOUNCE_COUNT) {
+        return '\0';
+    }
+
+    if (detected_key == s_last_reported_key) {
+        return '\0';
+    }
+
+    s_last_reported_key = detected_key;
     return detected_key;
 }
