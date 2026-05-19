@@ -1,6 +1,6 @@
 # Curie ESP32 Firmware Bundle
 
-This bundle contains two production firmware images and one controller test image.
+This bundle contains two production firmware images.
 
 ## Included binaries
 
@@ -8,15 +8,12 @@ This bundle contains two production firmware images and one controller test imag
 
 - `robot\curie_robot_full_4mb.bin`
 
-### Controller
+### BLE Controller
 
+- `controller\curie_controller_ble_full_4mb.bin`
 - `controller\curie_controller_full_4mb.bin`
 
-### Controller self-test
-
-This file is kept outside the release bundle in the repository:
-
-- `artifacts/controller_self_test_bundle/curie_controller_self_test_full_4mb.bin`
+Both controller files currently contain the same BLE controller image. The `ble` filename is the explicit one.
 
 ## Target hardware
 
@@ -32,17 +29,18 @@ Both production images target:
 - creates Wi-Fi SSID `Infrared Curie Setup`
 - AP IP `192.168.4.1`
 - serves dashboard at `http://192.168.4.1`
-- keeps AP active for direct phone/laptop control
 - exposes WebSocket control and OTA update path
-- enables ESP-NOW controller reception after startup
+- exposes a BLE control service for the handheld controller
 
 ## Controller behavior
 
 - does not join the robot AP
-- uses ESP-NOW on channel `1`
-- keypad selects expression pages
+- scans for the robot over BLE
 - joystick drives the robot
-- diamond buttons control shoulders, home, and estop
+- D-pad gives digital drive override
+- hold joystick press + D-pad for shoulders/home/estop
+- keypad selects expression pages
+- optional OLED on `GPIO13/14` shows connection and actions
 
 ## Fastest Windows flash flow
 
@@ -67,10 +65,10 @@ flash_controller_windows.bat COM6
 py -m esptool --chip esp32 -p COM5 -b 115200 --before default-reset --after hard-reset write-flash 0x0 robot\curie_robot_full_4mb.bin
 ```
 
-### Controller
+### BLE Controller
 
 ```bat
-py -m esptool --chip esp32 -p COM6 -b 115200 --before default-reset --after hard-reset write-flash 0x0 controller\curie_controller_full_4mb.bin
+py -m esptool --chip esp32 -p COM6 -b 115200 --before default-reset --after hard-reset write-flash 0x0 controller\curie_controller_ble_full_4mb.bin
 ```
 
 ## After flashing the robot
@@ -81,16 +79,12 @@ py -m esptool --chip esp32 -p COM6 -b 115200 --before default-reset --after hard
 
 ## After flashing the controller
 
-1. Power the robot first.
-2. Power the controller second.
-3. Reset the controller once if you need to see boot logs.
-
-Expected controller boot log:
-
-```text
-Curie controller boot
-ESP-NOW controller ready on channel 1
-```
+1. Power the robot and controller in any order.
+2. Open serial monitor at `115200` if you want diagnostics.
+3. If an OLED is wired, it should show:
+   - `Finding robot`
+   - `Connecting`
+   - `Robot ready`
 
 ## Manual component binaries
 
@@ -104,5 +98,5 @@ ESP-NOW controller ready on channel 1
 ### Controller
 
 - `controller\bootloader.bin`
-- `controller\partitions.bin`
+- `controller\partition-table.bin`
 - `controller\curie_controller_app.bin`

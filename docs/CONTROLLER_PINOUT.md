@@ -1,25 +1,27 @@
-# Curie Controller Pinout
+# Curie BLE Controller Pinout
 
-Current controller firmware sources:
+Current controller firmware source:
 
-- `remote_controller/remote_controller.ino`
-- `remote_controller_self_test/remote_controller_self_test.ino`
+- `remote_controller/main/main.c`
+- `remote_controller/main/keypad.c`
+- `remote_controller/main/oled_ui.c`
 
 Controller target:
 
 - `ESP32 DevKit V1`
 - `30-pin board`
-- transport: `ESP-NOW`
-- radio channel: `1`
+- transport: `BLE`
+- framework: `ESP-IDF 5.5.x`
 
-The controller does not join the robot AP. It sends radio packets directly to the robot.
+This controller does not join the robot Wi-Fi. It scans for the robot's BLE service and sends 8-byte control packets continuously after it connects.
 
 ## Controller layout
 
-- `4x4 membrane keypad` = expression selection
-- `left joystick` = drive
-- `diamond buttons` = shoulders + safety
-- `left joystick press` = speed mode / clear estop
+- `4x4 membrane keypad` = expressions and face actions
+- `left joystick` = analog drive
+- `left joystick press` = speed / combo modifier / clear estop
+- `diamond buttons` = digital drive override
+- `OLED` = connection state, selected expression, speed mode, and action feedback
 
 ## Left joystick
 
@@ -29,11 +31,12 @@ The controller does not join the robot AP. It sends radio packets directly to th
 | `JOY_Y` | `33` | ADC input |
 | `JOY_SW` | `25` | `INPUT_PULLUP` |
 
-### Left joystick behavior
+### Joystick behavior
 
-- joystick drives the robot continuously
-- short press on `JOY_SW` cycles speed mode
-- long press on `JOY_SW` clears estop
+- move joystick = proportional drive
+- short press on `JOY_SW` = cycle speed mode
+- long press on `JOY_SW` = clear estop
+- hold `JOY_SW` and use the D-pad = arm/safety combo actions
 
 ## Diamond buttons
 
@@ -45,14 +48,47 @@ Physical arrangement:
      DOWN
 ```
 
-| Position | GPIO | Action |
+| Position | GPIO | Normal action |
 |---|---:|---|
-| `UP` | `26` | shoulder up while held |
-| `RIGHT` | `27` | emergency stop |
-| `DOWN` | `21` | shoulder down while held |
-| `LEFT` | `22` | arm home |
+| `UP` | `27` | drive forward override |
+| `RIGHT` | `26` | drive right override |
+| `DOWN` | `21` | drive backward override |
+| `LEFT` | `22` | drive left override |
 
-Wire each button from GPIO to `GND` and use the internal pull-up.
+### Joystick-button combo actions
+
+Hold `JOY_SW`, then press a D-pad button:
+
+| Combo | Action |
+|---|---|
+| `JOY_SW + UP` | shoulders up |
+| `JOY_SW + DOWN` | shoulders down |
+| `JOY_SW + LEFT` | arm home |
+| `JOY_SW + RIGHT` | estop |
+
+Wire each D-pad button from GPIO to `GND` and use the internal pull-up.
+
+## OLED display
+
+| Function | GPIO |
+|---|---:|
+| `SDA` | `13` |
+| `SCL` | `14` |
+| `VCC` | `3V3` |
+| `GND` | `GND` |
+
+OLED notes:
+
+- firmware auto-detects SSD1306 at `0x3C` or `0x3D`
+- screen shows `Finding robot`, `Connecting`, `Robot ready`
+- shows current face label and speed label
+- shows action overlays like `GO!`, `BLINK`, `HOME`, `ARMS UP`
+
+## Battery sense
+
+| Function | GPIO | Status |
+|---|---:|---|
+| `Battery ADC` | `34` | reserved, disabled until divider hardware is finalized |
 
 ## 4x4 membrane keypad wiring
 
@@ -99,7 +135,7 @@ The controller uses a paged keypad model.
 | `B` | surprised |
 | `C` | excited |
 
-### Page 1: special expressions
+### Page 1: special faces
 
 | Key | Expression |
 |---|---|
@@ -128,9 +164,9 @@ The controller uses a paged keypad model.
 ## Practical notes
 
 - `GPIO2`, `GPIO4`, `GPIO5`, and `GPIO15` are boot-sensitive on ESP32.
-- This keypad mapping is acceptable for a passive membrane keypad, but if boot becomes unreliable, these are the first pins to revisit.
-- Keep all grounds common.
-- Use `3.3V` for the joystick.
+- this keypad mapping works for a passive membrane keypad, but if boot becomes unreliable these pins are the first thing to revisit
+- keep all grounds common
+- use `3.3V` for joystick and OLED
 
 ## Minimal wiring view
 
@@ -155,8 +191,17 @@ LEFT JOYSTICK
   GND -> GND
 
 DIAMOND BUTTONS
-  UP    -> GPIO26 -> button -> GND
-  RIGHT -> GPIO27 -> button -> GND
+  UP    -> GPIO27 -> button -> GND
+  RIGHT -> GPIO26 -> button -> GND
   DOWN  -> GPIO21 -> button -> GND
   LEFT  -> GPIO22 -> button -> GND
+
+OLED
+  SDA -> GPIO13
+  SCL -> GPIO14
+  VCC -> 3V3
+  GND -> GND
+
+BATTERY ADC
+  ADC -> GPIO34
 ```

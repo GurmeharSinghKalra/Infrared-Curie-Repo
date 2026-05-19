@@ -25,9 +25,8 @@
 #define CURIE_M4_LPWM_GPIO 4
 
 // Shoulders: preserved from the existing robot harness.
-// Warning: GPIO12 and GPIO2 are ESP32 strapping pins. They are safe only if the
-// attached servo circuitry does not force invalid levels during reset.
-#define CURIE_LEFT_SHOULDER_GPIO 12
+// Left shoulder was moved off GPIO12 to avoid the strapping-risk pin.
+#define CURIE_LEFT_SHOULDER_GPIO 19
 #define CURIE_RIGHT_SHOULDER_GPIO 2
 
 // Eyes: two SSD1306-style I2C OLED buses.
@@ -52,14 +51,17 @@
 // cascades into the physical left module, so logical left/right must be swapped.
 // The modules are mounted upright, so row/column flips are left disabled.
 #define CURIE_MOUTH_SWAP_HALVES      1
-#define CURIE_MOUTH_LEFT_FLIP_ROWS   0
+#define CURIE_MOUTH_LEFT_FLIP_ROWS   1
 #define CURIE_MOUTH_LEFT_FLIP_COLS   0
-#define CURIE_MOUTH_RIGHT_FLIP_ROWS  0
+#define CURIE_MOUTH_RIGHT_FLIP_ROWS  1
 #define CURIE_MOUTH_RIGHT_FLIP_COLS  0
 
 // In-place turn scaling. Turning at reduced speed is more robust on the current
 // drivetrain than commanding both sides to full opposing duty.
 #define CURIE_TANK_TURN_SCALE_PCT 65
+#define CURIE_LEFT_TURN_SLOW_PCT 25
+#define CURIE_RIGHT_TURN_RIGHT_SIDE_PCT 70
+#define CURIE_RIGHT_TURN_FRONT_LEFT_PCT 20
 
 // Wi-Fi defaults tuned for compatibility-first provisioning.
 #define CURIE_AP_SSID "Infrared Curie Setup"

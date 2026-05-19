@@ -113,24 +113,53 @@ static void set_motor_channels(int m1_r, int m1_l, int m2_r, int m2_l,
     }
 }
 
-static void set_tank_sides(int left_pct, int right_pct) {
-    left_pct = clamp_int(left_pct, -100, 100);
-    right_pct = clamp_int(right_pct, -100, 100);
+static void encode_motor_pct(int pct, bool invert, int *rpwm, int *lpwm) {
+    pct = clamp_int(pct, -100, 100);
+    if (invert) {
+        pct = -pct;
+    }
+    int pwm = (abs(pct) * 255) / 100;
+    *rpwm = pct > 0 ? pwm : 0;
+    *lpwm = pct < 0 ? pwm : 0;
+}
 
-    int left_pwm = (abs(left_pct) * 255) / 100;
-    int right_pwm = (abs(right_pct) * 255) / 100;
+static void set_motor_pct(int front_left_pct, int front_right_pct, int rear_left_pct, int rear_right_pct) {
+    int m1_r = 0, m1_l = 0, m2_r = 0, m2_l = 0;
+    int m3_r = 0, m3_l = 0, m4_r = 0, m4_l = 0;
 
-    int left_fwd = left_pct > 0 ? left_pwm : 0;
-    int left_bwd = left_pct < 0 ? left_pwm : 0;
-    int right_fwd = right_pct > 0 ? right_pwm : 0;
-    int right_bwd = right_pct < 0 ? right_pwm : 0;
+    // The left-side drivetrain is mounted electrically reversed relative to the right side.
+    encode_motor_pct(front_left_pct, true, &m1_r, &m1_l);
+    encode_motor_pct(front_right_pct, false, &m2_r, &m2_l);
+    encode_motor_pct(rear_left_pct, true, &m3_r, &m3_l);
+    encode_motor_pct(rear_right_pct, false, &m4_r, &m4_l);
 
-    // Physical layout:
-    //   M1 = front-left, M3 = rear-left
-    //   M2 = front-right, M4 = rear-right
-    // Tank grouping keeps M1+M3 on the left side and M2+M4 on the right side.
-    set_motor_channels(left_fwd, left_bwd, right_fwd, right_bwd,
-                       left_fwd, left_bwd, right_fwd, right_bwd);
+    set_motor_channels(m1_r, m1_l, m2_r, m2_l, m3_r, m3_l, m4_r, m4_l);
+}
+
+static void apply_drive_pattern(robot_drive_t drive) {
+    int left_pct = clamp_int(drive.left, -100, 100);
+    int right_pct = clamp_int(drive.right, -100, 100);
+
+    if (left_pct == 0 && right_pct == 0) {
+        set_motor_pct(0, 0, 0, 0);
+        return;
+    }
+
+    if (left_pct < 0 && right_pct > 0) {
+        int slow = clamp_int((clamp_int(abs(left_pct) > abs(right_pct) ? abs(left_pct) : abs(right_pct), 0, 100) * CURIE_LEFT_TURN_SLOW_PCT) / 100, 12, 35);
+        set_motor_pct(slow, slow, slow, slow);
+        return;
+    }
+
+    if (left_pct > 0 && right_pct < 0) {
+        int magnitude = clamp_int(abs(left_pct) > abs(right_pct) ? abs(left_pct) : abs(right_pct), 0, 100);
+        int right_side = clamp_int((magnitude * CURIE_RIGHT_TURN_RIGHT_SIDE_PCT) / 100, 20, 100);
+        int front_left = clamp_int((magnitude * CURIE_RIGHT_TURN_FRONT_LEFT_PCT) / 100, 8, 35);
+        set_motor_pct(-front_left, -right_side, 0, -right_side);
+        return;
+    }
+
+    set_motor_pct(left_pct, right_pct, left_pct, right_pct);
 }
 
 static int step_toward(int current, int target, int step) {
@@ -190,7 +219,7 @@ void task_motion(void *arg) {
             target = (robot_drive_t){0, 0};
             actual_left = 0;
             actual_right = 0;
-            set_tank_sides(0, 0);
+            set_motor_pct(0, 0, 0, 0);
         }
 
         if (powered && state != ROBOT_STATE_ERROR) {
@@ -210,7 +239,7 @@ void task_motion(void *arg) {
         int ramp = RAMP_STEPS[profile];
         actual_left = step_toward(actual_left, target.left, ramp);
         actual_right = step_toward(actual_right, target.right, ramp);
-        set_tank_sides(actual_left, actual_right);
+        apply_drive_pattern((robot_drive_t){actual_left, actual_right});
 
         vTaskDelay(pdMS_TO_TICKS(20));
     }

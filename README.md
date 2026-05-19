@@ -7,7 +7,7 @@ Infrared Curie is an ESP32-based expressive robot platform with:
 - four DC drive motors
 - shoulder servos
 - AP-first local dashboard
-- handheld ESP32 controller over ESP-NOW
+- handheld ESP32 controller over BLE
 
 Legacy code in this repository is from Google Antigravity; the current V6 robot/controller targets and release bundle were added by Codex.
 
@@ -21,10 +21,10 @@ Legacy code in this repository is from Google Antigravity; the current V6 robot/
 
 ### Controller
 
-- source: `remote_controller/remote_controller.ino`
-- self-test source: `remote_controller_self_test/remote_controller_self_test.ino`
+- source: `remote_controller`
 - board: `ESP32 DevKit V1 (30-pin)`
-- framework: Arduino core for ESP32
+- framework: `ESP-IDF 5.5.x`
+- transport: BLE
 
 ## Current release artifacts
 
@@ -39,19 +39,17 @@ Prebuilt binaries and flashing scripts live in:
 - local dashboard at `http://192.168.4.1`
 - WebSocket command channel
 - OTA update endpoint
-- ESP-NOW controller receiver
+- BLE controller receiver
 - dual-eye + eyebrow + mouth face engine
 - paged controller expression input
-- controller self-test image for radio validation without controller hardware
+- kid-facing controller OLED UI with auto-detected SSD1306 address support
 
 ## Repository structure
 
 - `firmware/`
   - robot firmware targets
 - `remote_controller/`
-  - final handheld controller firmware
-- `remote_controller_self_test/`
-  - controller radio self-test firmware
+  - final handheld BLE controller firmware
 - `artifacts/`
   - release binaries and flash bundles
 - `docs/`
@@ -63,6 +61,14 @@ Prebuilt binaries and flashing scripts live in:
 - controller pinout: `docs/CONTROLLER_PINOUT.md`
 - flashing guide: `docs/FLASHING_GUIDE.md`
 - current robot firmware notes: `firmware/v6_doit30_clean_rewrite/README.md`
+
+## Controller overview
+
+- joystick = analog drive
+- D-pad = digital drive override
+- hold joystick press + D-pad = arm/safety actions
+- keypad = expression pages
+- OLED = connection, expression, speed, and action feedback
 
 ## Robot build
 

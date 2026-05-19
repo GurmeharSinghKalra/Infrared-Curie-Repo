@@ -1,20 +1,27 @@
-# Curie Controller Pinout
+# Curie BLE Controller Pinout
 
-This document describes the revised handheld controller firmware and wiring.
+Current controller firmware source:
 
-- Source: [remote_controller.ino](</C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/remote_controller/remote_controller.ino>)
-- Controller MCU: ESP32 DevKit V1, 30-pin
-- Transport: ESP-NOW on channel `1`
-- Robot dashboard remains on the robot AP:
-  - SSID: `Infrared Curie Setup`
-  - URL: `http://192.168.4.1`
+- `remote_controller/main/main.c`
+- `remote_controller/main/keypad.c`
+- `remote_controller/main/oled_ui.c`
+
+Controller target:
+
+- `ESP32 DevKit V1`
+- `30-pin board`
+- transport: `BLE`
+- framework: `ESP-IDF 5.5.x`
+
+This controller does not join the robot Wi-Fi. It scans for the robot's BLE service and sends 8-byte control packets continuously after it connects.
 
 ## Controller layout
 
-- `4x4 membrane keypad`: expressions
-- `Left joystick`: robot drive
-- `Diamond 4 buttons`: shoulders and safety actions
-- `Left joystick press`: speed mode / clear estop
+- `4x4 membrane keypad` = expressions and face actions
+- `left joystick` = analog drive
+- `left joystick press` = speed / combo modifier / clear estop
+- `diamond buttons` = digital drive override
+- `OLED` = connection state, selected expression, speed mode, and action feedback
 
 ## Left joystick
 
@@ -22,20 +29,18 @@ This document describes the revised handheld controller firmware and wiring.
 |---|---:|---|
 | `JOY_X` | `32` | ADC input |
 | `JOY_Y` | `33` | ADC input |
-| `JOY_SW` | `25` | Digital input, `INPUT_PULLUP` |
+| `JOY_SW` | `25` | `INPUT_PULLUP` |
 
-### Left joystick behavior
+### Joystick behavior
 
-- `X/Y` drive the robot as tank-mixed throttle + steering
-- short press on `JOY_SW`: cycles speed cap
-  - `40%`
-  - `70%`
-  - `100%`
-- long press on `JOY_SW` for about `1.2 s`: clear estop
+- move joystick = proportional drive
+- short press on `JOY_SW` = cycle speed mode
+- long press on `JOY_SW` = clear estop
+- hold `JOY_SW` and use the D-pad = arm/safety combo actions
 
 ## Diamond buttons
 
-Recommended physical arrangement:
+Physical arrangement:
 
 ```text
       UP
@@ -43,16 +48,49 @@ Recommended physical arrangement:
      DOWN
 ```
 
-| Position | ESP32 GPIO | Action |
+| Position | GPIO | Normal action |
 |---|---:|---|
-| `UP` | `26` | shoulders up while held |
-| `RIGHT` | `27` | emergency stop while held |
-| `DOWN` | `21` | shoulders down while held |
-| `LEFT` | `22` | arm home / neutral reset |
+| `UP` | `27` | drive forward override |
+| `RIGHT` | `26` | drive right override |
+| `DOWN` | `21` | drive backward override |
+| `LEFT` | `22` | drive left override |
 
-Wire each button from GPIO to `GND` and use the internal pull-up.
+### Joystick-button combo actions
 
-## 4x4 membrane keypad
+Hold `JOY_SW`, then press a D-pad button:
+
+| Combo | Action |
+|---|---|
+| `JOY_SW + UP` | shoulders up |
+| `JOY_SW + DOWN` | shoulders down |
+| `JOY_SW + LEFT` | arm home |
+| `JOY_SW + RIGHT` | estop |
+
+Wire each D-pad button from GPIO to `GND` and use the internal pull-up.
+
+## OLED display
+
+| Function | GPIO |
+|---|---:|
+| `SDA` | `13` |
+| `SCL` | `14` |
+| `VCC` | `3V3` |
+| `GND` | `GND` |
+
+OLED notes:
+
+- firmware auto-detects SSD1306 at `0x3C` or `0x3D`
+- screen shows `Finding robot`, `Connecting`, `Robot ready`
+- shows current face label and speed label
+- shows action overlays like `GO!`, `BLINK`, `HOME`, `ARMS UP`
+
+## Battery sense
+
+| Function | GPIO | Status |
+|---|---:|---|
+| `Battery ADC` | `34` | reserved, disabled until divider hardware is finalized |
+
+## 4x4 membrane keypad wiring
 
 ### Key layout
 
@@ -65,7 +103,7 @@ Wire each button from GPIO to `GND` and use the internal pull-up.
 
 ### ESP32 connections
 
-| Keypad line | ESP32 GPIO |
+| Keypad line | GPIO |
 |---|---:|
 | `R1` | `19` |
 | `R2` | `18` |
@@ -76,35 +114,61 @@ Wire each button from GPIO to `GND` and use the internal pull-up.
 | `C3` | `2` |
 | `C4` | `15` |
 
-## Keypad expression mapping
+## Expression pages
+
+The controller uses a paged keypad model.
+
+### Page 0: core expressions
+
+| Key | Expression |
+|---|---|
+| `1` | happiness |
+| `2` | sadness |
+| `3` | anger |
+| `4` | fear |
+| `5` | disgust |
+| `6` | confused |
+| `7` | contempt |
+| `8` | thoughtful |
+| `9` | shy |
+| `A` | funny |
+| `B` | surprised |
+| `C` | excited |
+
+### Page 1: special faces
+
+| Key | Expression |
+|---|---|
+| `1` | sleep |
+| `2` | scan |
+| `3` | love |
+| `4` | wink |
+| `5` | thoughtful |
+| `6` | funny |
+| `7` | surprised |
+| `8` | excited |
+| `9` | fear |
+| `A` | disgust |
+| `B` | confused |
+| `C` | contempt |
+
+### Utility keys
 
 | Key | Action |
 |---|---|
-| `1` | happy |
-| `2` | neutral |
-| `3` | sad |
-| `4` | wink |
-| `5` | love |
-| `6` | angry |
-| `7` | sleep |
-| `8` | scan |
-| `9` | surprise |
-| `0` | curious |
-| `A` | excited |
-| `B` | confused |
-| `C` | lost |
-| `D` | custom |
+| `0` | neutral face |
 | `*` | blink |
-| `#` | neutral reset |
+| `#` | random core expression |
+| `D` | toggle expression page |
 
 ## Practical notes
 
-- GPIO `2`, `4`, `5`, and `15` are boot-sensitive on ESP32. This keypad mapping is acceptable for a passive membrane keypad, but if boot becomes flaky, move the keypad to safer GPIOs first.
-- Keep all grounds common.
-- Use `3.3V` for the joystick module.
-- `GPIO21` and `GPIO22` are used only on the controller for buttons, not I2C.
+- `GPIO2`, `GPIO4`, `GPIO5`, and `GPIO15` are boot-sensitive on ESP32.
+- this keypad mapping works for a passive membrane keypad, but if boot becomes unreliable these pins are the first thing to revisit
+- keep all grounds common
+- use `3.3V` for joystick and OLED
 
-## Minimal schematic view
+## Minimal wiring view
 
 ```text
 ESP32 CONTROLLER
@@ -127,8 +191,17 @@ LEFT JOYSTICK
   GND -> GND
 
 DIAMOND BUTTONS
-  UP    -> GPIO26 -> button -> GND
-  RIGHT -> GPIO27 -> button -> GND
+  UP    -> GPIO27 -> button -> GND
+  RIGHT -> GPIO26 -> button -> GND
   DOWN  -> GPIO21 -> button -> GND
   LEFT  -> GPIO22 -> button -> GND
+
+OLED
+  SDA -> GPIO13
+  SCL -> GPIO14
+  VCC -> 3V3
+  GND -> GND
+
+BATTERY ADC
+  ADC -> GPIO34
 ```

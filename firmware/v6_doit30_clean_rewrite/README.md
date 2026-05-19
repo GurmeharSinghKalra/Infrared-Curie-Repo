@@ -15,7 +15,7 @@ ESP-IDF 5.5.x firmware target for the Curie robot on a DOIT ESP32 DevKit V1 (30-
 - Motor M2: GPIO27 / GPIO14
 - Motor M3: GPIO13 / GPIO16
 - Motor M4: GPIO17 / GPIO4
-- Left shoulder servo: GPIO12
+- Left shoulder servo: GPIO19
 - Right shoulder servo: GPIO2
 - Left OLED: I2C0 SDA GPIO21, SCL GPIO22
 - Right OLED: I2C1 SDA GPIO32, SCL GPIO33
@@ -23,10 +23,10 @@ ESP-IDF 5.5.x firmware target for the Curie robot on a DOIT ESP32 DevKit V1 (30-
 
 ## Important hardware assumptions
 
-- GPIO12 and GPIO2 are ESP32 strapping pins.
+- GPIO2 is still a strapping pin.
 - GPIO4 and GPIO5 are also sensitive at boot on many ESP32 designs.
-- This target preserves the existing robot wiring, so it assumes the attached servo, motor, and display hardware does not pull those pins into invalid boot states during reset.
-- If boot behavior is flaky, rewire shoulder servos away from GPIO12 and GPIO2 first.
+- This target preserves the existing robot wiring except for the left shoulder servo, which was moved off GPIO12 to GPIO19.
+- If boot behavior is flaky, first suspect GPIO2, GPIO4, and GPIO5.
 
 ## Network behavior
 
@@ -38,7 +38,7 @@ ESP-IDF 5.5.x firmware target for the Curie robot on a DOIT ESP32 DevKit V1 (30-
 - WebSocket control channel at `/ws`
 - OTA endpoint at `/update`
 - If STA credentials are saved via `/api/wifi/connect`, the board keeps the local AP alive and starts a STA uplink without leaving AP mode
-- ESP-NOW controller receiver starts after the AP/dashboard startup window so the phone/laptop path stays first
+- BLE controller receiver starts after robot boot and re-advertises on stale-link recovery
 
 ## Build
 

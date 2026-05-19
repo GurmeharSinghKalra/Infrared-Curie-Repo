@@ -3,7 +3,7 @@
 This repository currently ships two main firmware targets:
 
 - robot firmware
-- controller firmware
+- BLE controller firmware
 
 Release-ready binaries are packaged in:
 
@@ -36,48 +36,47 @@ After flashing the robot:
 2. Connect a phone or laptop to `Infrared Curie Setup`.
 3. Open `http://192.168.4.1`.
 
-## Controller firmware
+## BLE controller firmware
 
 Primary file:
 
-- `artifacts/release_bundle/controller/curie_controller_full_4mb.bin`
+- `artifacts/release_bundle/controller/curie_controller_ble_full_4mb.bin`
 
 Windows command:
 
 ```bat
-py -m esptool --chip esp32 -p COM16 -b 115200 --before default-reset --after hard-reset write-flash 0x0 "C:\path\to\curie_dual_esp32_flash_bundle\controller\curie_controller_full_4mb.bin"
+py -m esptool --chip esp32 -p COM16 -b 115200 --before default-reset --after hard-reset write-flash 0x0 "C:\path\to\curie_dual_esp32_flash_bundle\controller\curie_controller_ble_full_4mb.bin"
 ```
 
 After flashing the controller:
 
-1. Power the robot first.
-2. Power the controller second.
-3. Reset the controller once if you need to see boot logs.
-4. Open serial monitor at `115200` to verify:
+1. Power the robot first or second; the BLE controller now rescans and recovers either way.
+2. Power the controller.
+3. Open serial monitor at `115200` if you want diagnostics.
+4. Expected boot logs include:
 
 ```text
-Curie controller boot
-ESP-NOW controller ready on channel 1
+Starting Curie BLE Controller (Native C ESP-IDF)...
+NimBLE host task started
 ```
 
-## Controller self-test firmware
+5. If an OLED is wired on `GPIO13/14`, the controller should show:
+   - `Finding robot`
+   - `Connecting`
+   - `Robot ready`
 
-Use this if you want to validate the radio link without wiring the controller hardware.
+## Controller controls
 
-File:
-
-- `artifacts/controller_self_test_bundle/curie_controller_self_test_full_4mb.bin`
-
-It automatically sends a scripted sequence:
-
-- expressions
-- blink
-- shoulder up/down
-- home
-- forward
-- stop
-- estop
-- clear estop
+- joystick = analog drive
+- short joystick press = speed mode
+- long joystick press = clear estop
+- D-pad = digital drive override
+- hold joystick press + D-pad:
+  - up = arms up
+  - down = arms down
+  - left = home
+  - right = estop
+- keypad = expressions
 
 ## If flashing fails
 

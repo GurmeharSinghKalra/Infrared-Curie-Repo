@@ -11,6 +11,7 @@
 #include "driver/gpio.h"
 #include "esp_adc/adc_oneshot.h"
 #include "keypad.h"
+#include "oled_ui.h"
 
 // NimBLE Host headers
 #include "nimble/nimble_port.h"
@@ -31,6 +32,11 @@ static const char *TAG = "CTRL_BLE_CLIENT";
 
 static const uint8_t CURIE_BLE_MAGIC = 0xC4;
 #define SEND_INTERVAL_MS 40
+#define STATUS_LOG_INTERVAL_US 10000000
+#define DISCOVERY_TIMEOUT_US 5000000
+#define WRITE_ERROR_RECONNECT_THRESHOLD 4
+#define CONTROLLER_BATTERY_ADC_ENABLED 0
+#define CONTROLLER_BATTERY_DIVIDER_X1000 2000
 
 // UUID Definitions
 static const ble_uuid128_t gatt_svr_svc_uuid =
@@ -46,6 +52,15 @@ static uint16_t s_conn_handle = 0;
 static uint16_t s_chr_value_handle = 0;
 static bool s_connected = false;
 static uint8_t own_addr_type;
+static bool s_service_found = false;
+static bool s_char_found = false;
+static bool s_connecting = false;
+static int64_t s_connect_started_us = 0;
+static int64_t s_last_good_tx_us = 0;
+static int64_t s_last_status_log_us = 0;
+static uint32_t s_packets_sent = 0;
+static uint32_t s_packets_failed = 0;
+static uint32_t s_consecutive_write_errors = 0;
 
 // Controller state variables
 static uint8_t s_sequence = 0;
@@ -53,19 +68,23 @@ static uint8_t s_speed_mode = 1;
 static uint8_t s_pending_expression = 0;
 static uint8_t s_pending_button_latch = 0;
 static uint8_t s_expression_page = 0;
+static uint8_t s_current_expression_id = 13;
 
 static bool s_joy_button_down = false;
 static int64_t s_joy_button_press_us = 0;
 static bool s_joy_long_handled = false;
-
-static uint32_t s_last_arm_repeat_ms = 0;
-static uint32_t s_last_home_repeat_ms = 0;
+static bool s_joy_combo_used = false;
+static uint8_t s_last_logged_dpad_mask = 0xFF;
 
 // ADC handle
 static adc_oneshot_unit_handle_t s_adc_unit = NULL;
 
 static void ble_client_scan(void);
 static void buttons_init(void);
+static void ble_client_force_rescan(const char *reason);
+static void log_controller_status(void);
+static const char *expression_label(uint8_t id);
+static const char *speed_label(uint8_t mode);
 
 static uint8_t checksum_xor(const uint8_t *data) {
     uint8_t out = 0;
@@ -83,7 +102,7 @@ static uint8_t clamp_to_byte(int value) {
 
 static uint8_t analog_to_axis_byte(int raw, bool invert) {
     const int center = 2048;
-    const int deadzone = 250;
+    const int deadzone = 450;
     if (abs(raw - center) <= deadzone) {
         return 128;
     }
@@ -94,20 +113,152 @@ static uint8_t analog_to_axis_byte(int raw, bool invert) {
     return clamp_to_byte(adjusted);
 }
 
+static const char *expression_label(uint8_t id) {
+    switch (id) {
+        case 1: return "HAPPY";
+        case 2: return "SAD";
+        case 3: return "MAD";
+        case 4: return "FEAR";
+        case 5: return "YUCK";
+        case 6: return "HUH?";
+        case 7: return "SMIRK";
+        case 8: return "THINK";
+        case 9: return "SHY";
+        case 10: return "FUNNY";
+        case 11: return "WOW";
+        case 12: return "YAY";
+        case 13: return "READY";
+        case 14: return "WINK";
+        case 15: return "LOVE";
+        case 16: return "SLEEP";
+        case 17: return "SCAN";
+        default: return "READY";
+    }
+}
+
+static const char *speed_label(uint8_t mode) {
+    switch (mode) {
+        case 0: return "Turtle";
+        case 1: return "Cruise";
+        case 2: return "Zoom";
+        default: return "Cruise";
+    }
+}
+
+static void clear_link_state(void) {
+    s_connected = false;
+    s_connecting = false;
+    s_service_found = false;
+    s_char_found = false;
+    s_chr_value_handle = 0;
+    s_conn_handle = 0;
+    s_consecutive_write_errors = 0;
+}
+
+static void ble_client_force_rescan(const char *reason) {
+    ESP_LOGW(TAG, "Forcing BLE recovery: %s", reason);
+    if (s_conn_handle != 0) {
+        int rc = ble_gap_terminate(s_conn_handle, BLE_ERR_REM_USER_CONN_TERM);
+        if (rc != 0 && rc != BLE_HS_ENOTCONN) {
+            ESP_LOGW(TAG, "ble_gap_terminate rc=%d during recovery", rc);
+        }
+    }
+    clear_link_state();
+    ble_client_scan();
+}
+
+static void log_controller_status(void) {
+    int64_t now = esp_timer_get_time();
+    if ((now - s_last_status_log_us) < STATUS_LOG_INTERVAL_US) {
+        return;
+    }
+    s_last_status_log_us = now;
+    ESP_LOGI(TAG,
+             "BLE status: connected=%d connecting=%d svc=%d chr=%d conn=%u handle=%u tx_ok=%lu tx_err=%lu last_tx_ms=%lld",
+             s_connected,
+             s_connecting,
+             s_service_found,
+             s_char_found,
+             (unsigned)s_conn_handle,
+             (unsigned)s_chr_value_handle,
+             (unsigned long)s_packets_sent,
+             (unsigned long)s_packets_failed,
+             s_last_good_tx_us > 0 ? (long long)((now - s_last_good_tx_us) / 1000) : -1LL);
+}
+
+static uint8_t read_dpad_mask(void) {
+    uint8_t mask = 0;
+    if (gpio_get_level(GPIO_NUM_27) == 0) mask |= (1 << 0); // Up
+    if (gpio_get_level(GPIO_NUM_26) == 0) mask |= (1 << 1); // Right
+    if (gpio_get_level(GPIO_NUM_21) == 0) mask |= (1 << 2); // Down
+    if (gpio_get_level(GPIO_NUM_22) == 0) mask |= (1 << 3); // Left
+    return mask;
+}
+
+static void apply_dpad_override(uint8_t *throttle, uint8_t *steering) {
+    uint8_t dpad = read_dpad_mask();
+    bool up = (dpad & (1 << 0)) != 0;
+    bool right = (dpad & (1 << 1)) != 0;
+    bool down = (dpad & (1 << 2)) != 0;
+    bool left = (dpad & (1 << 3)) != 0;
+
+    if (dpad != s_last_logged_dpad_mask) {
+        ESP_LOGI(TAG, "Drive buttons: U=%d R=%d D=%d L=%d", up, right, down, left);
+        s_last_logged_dpad_mask = dpad;
+        if (up && !down) {
+            controller_ui_show_action("GO!");
+        } else if (down && !up) {
+            controller_ui_show_action("BACK");
+        } else if (left && !right) {
+            controller_ui_show_action("LEFT");
+        } else if (right && !left) {
+            controller_ui_show_action("RIGHT");
+        }
+    }
+
+    if (dpad == 0) {
+        return;
+    }
+
+    *throttle = 128;
+    *steering = 128;
+
+    if (up && !down) {
+        *throttle = 0;
+    } else if (down && !up) {
+        *throttle = 255;
+    }
+
+    if (left && !right) {
+        *steering = 0;
+    } else if (right && !left) {
+        *steering = 255;
+    }
+}
+
 // Characteristic Discovery Callback
 static int ble_client_on_disc_chr(uint16_t conn_handle, const struct ble_gatt_error *error,
                                   const struct ble_gatt_chr *chr, void *arg) {
     if (error->status == 0) {
         if (ble_uuid_cmp(&chr->uuid.u, &gatt_svr_chr_uuid.u) == 0) {
+            s_char_found = true;
             s_chr_value_handle = chr->val_handle;
             s_conn_handle = conn_handle;
             s_connected = true;
+            s_connecting = false;
+            s_consecutive_write_errors = 0;
+            s_last_good_tx_us = esp_timer_get_time();
             ESP_LOGI(TAG, "BLE Curie service and characteristic discovered! Value Handle: %d", chr->val_handle);
         }
     } else if (error->status == BLE_HS_EDONE) {
-        ESP_LOGI(TAG, "BLE Characteristic discovery complete");
+        if (!s_char_found) {
+            ble_client_force_rescan("required characteristic not found");
+        } else {
+            ESP_LOGI(TAG, "BLE Characteristic discovery complete");
+        }
     } else {
         ESP_LOGE(TAG, "BLE Characteristic discovery error: %d", error->status);
+        ble_client_force_rescan("characteristic discovery error");
     }
     return 0;
 }
@@ -117,33 +268,45 @@ static int ble_client_on_disc_svc(uint16_t conn_handle, const struct ble_gatt_er
                                   const struct ble_gatt_svc *svc, void *arg) {
     if (error->status == 0) {
         if (ble_uuid_cmp(&svc->uuid.u, &gatt_svr_svc_uuid.u) == 0) {
+            s_service_found = true;
             ESP_LOGI(TAG, "Discovered Curie Service! Finding characteristics...");
             ble_gattc_disc_all_chrs(conn_handle, svc->start_handle, svc->end_handle,
                                     ble_client_on_disc_chr, NULL);
         }
     } else if (error->status == BLE_HS_EDONE) {
-        ESP_LOGI(TAG, "BLE Service discovery complete");
+        if (!s_service_found) {
+            ble_client_force_rescan("required service not found");
+        } else {
+            ESP_LOGI(TAG, "BLE Service discovery complete");
+        }
     } else {
         ESP_LOGE(TAG, "BLE Service discovery error: %d", error->status);
+        ble_client_force_rescan("service discovery error");
     }
     return 0;
 }
 
 // GAP events callback
 static int ble_client_gap_event(struct ble_gap_event *event, void *arg) {
+    (void)arg;
     switch (event->type) {
         case BLE_GAP_EVENT_DISC: {
             struct ble_hs_adv_fields fields;
             int rc = ble_hs_adv_parse_fields(&fields, event->disc.data, event->disc.length_data);
             if (rc != 0) return 0;
 
-            if (fields.name_len == 11 && memcmp(fields.name, "Curie-Robot", 11) == 0) {
+            if (!s_connecting && fields.name_len == 11 && memcmp(fields.name, "Curie-Robot", 11) == 0) {
                 ESP_LOGI(TAG, "Robot found! Connecting...");
                 ble_gap_disc_cancel();
 
+                s_connecting = true;
+                s_service_found = false;
+                s_char_found = false;
+                s_connect_started_us = esp_timer_get_time();
                 rc = ble_gap_connect(own_addr_type, &event->disc.addr, 30000, NULL,
                                      ble_client_gap_event, NULL);
                 if (rc != 0) {
+                    s_connecting = false;
                     ESP_LOGE(TAG, "Failed to initiate connection: %d", rc);
                     ble_client_scan();
                 }
@@ -153,9 +316,11 @@ static int ble_client_gap_event(struct ble_gap_event *event, void *arg) {
 
         case BLE_GAP_EVENT_CONNECT:
             if (event->connect.status == 0) {
+                s_conn_handle = event->connect.conn_handle;
                 ESP_LOGI(TAG, "Successfully connected to robot! Starting service discovery...");
                 ble_gattc_disc_all_svcs(event->connect.conn_handle, ble_client_on_disc_svc, NULL);
             } else {
+                clear_link_state();
                 ESP_LOGW(TAG, "BLE connection failed: %d. Restarting scan...", event->connect.status);
                 ble_client_scan();
             }
@@ -163,10 +328,15 @@ static int ble_client_gap_event(struct ble_gap_event *event, void *arg) {
 
         case BLE_GAP_EVENT_DISCONNECT:
             ESP_LOGI(TAG, "Robot disconnected. Reason: %d. Re-scanning...", event->disconnect.reason);
-            s_connected = false;
-            s_chr_value_handle = 0;
-            s_conn_handle = 0;
+            clear_link_state();
             ble_client_scan();
+            return 0;
+
+        case BLE_GAP_EVENT_DISC_COMPLETE:
+            if (!s_connected && !s_connecting) {
+                ESP_LOGW(TAG, "Scan completed without a robot; restarting scan");
+                ble_client_scan();
+            }
             return 0;
 
         default:
@@ -208,16 +378,20 @@ static void nimble_host_task(void *param) {
 
 static void queue_expression(uint8_t id) {
     s_pending_expression = id;
+    s_current_expression_id = id;
+    controller_ui_show_action(expression_label(id));
 }
 
 static void queue_expression_from_key(char key) {
     if (key == 'D') {
         s_expression_page ^= 1;
         ESP_LOGI(TAG, "Expression page toggled to %d", s_expression_page);
+        controller_ui_show_action(s_expression_page ? "MORE FACES" : "MAIN FACES");
         return;
     }
     if (key == '*') {
         s_pending_button_latch |= CURIE_CTRL_BTN_BLINK;
+        controller_ui_show_action("BLINK");
         return;
     }
     if (key == '#') {
@@ -265,57 +439,77 @@ static void queue_expression_from_key(char key) {
 
 static void process_joystick_button(void) {
     bool pressed = (gpio_get_level(GPIO_NUM_25) == 0);
+    uint8_t dpad = read_dpad_mask();
     int64_t now = esp_timer_get_time();
 
     if (pressed && !s_joy_button_down) {
         s_joy_button_down = true;
         s_joy_button_press_us = now;
         s_joy_long_handled = false;
+        s_joy_combo_used = false;
     } else if (!pressed && s_joy_button_down) {
-        if (!s_joy_long_handled) {
+        if (!s_joy_long_handled && !s_joy_combo_used) {
             s_speed_mode = (s_speed_mode + 1) % 3;
             ESP_LOGI(TAG, "Speed mode changed to: %d", s_speed_mode);
+            controller_ui_show_action(speed_label(s_speed_mode));
         }
         s_joy_button_down = false;
+        s_joy_combo_used = false;
+    }
+
+    if (pressed && dpad != 0) {
+        s_joy_combo_used = true;
+        if (dpad & (1 << 0)) {
+            s_pending_button_latch |= CURIE_CTRL_BTN_ARM_UP;
+            controller_ui_show_action("ARMS UP");
+        }
+        if (dpad & (1 << 2)) {
+            s_pending_button_latch |= CURIE_CTRL_BTN_ARM_DOWN;
+            controller_ui_show_action("ARMS DOWN");
+        }
+        if (dpad & (1 << 3)) {
+            s_pending_button_latch |= CURIE_CTRL_BTN_HOME;
+            controller_ui_show_action("HOME");
+        }
+        if (dpad & (1 << 1)) {
+            s_pending_button_latch |= CURIE_CTRL_BTN_ESTOP;
+            controller_ui_show_action("ESTOP");
+        }
+        return;
     }
 
     if (pressed && !s_joy_long_handled && (now - s_joy_button_press_us) >= 1200000) {
         s_pending_button_latch |= CURIE_CTRL_BTN_CLEAR_ESTOP;
         s_joy_long_handled = true;
         ESP_LOGI(TAG, "Latched E-STOP Clear");
+        controller_ui_show_action("ALL CLEAR");
     }
 }
 
 static uint8_t collect_buttons(void) {
     uint8_t buttons = s_pending_button_latch;
     s_pending_button_latch = 0;
-
-    bool arm_up = (gpio_get_level(GPIO_NUM_26) == 0);
-    bool arm_down = (gpio_get_level(GPIO_NUM_21) == 0);
-    bool home = (gpio_get_level(GPIO_NUM_22) == 0);
-    bool estop = (gpio_get_level(GPIO_NUM_27) == 0);
-
-    if (estop) buttons |= CURIE_CTRL_BTN_ESTOP;
-
-    uint32_t now = xTaskGetTickCount() * portTICK_PERIOD_MS;
-
-    if (home && (now - s_last_home_repeat_ms >= 350)) {
-        buttons |= CURIE_CTRL_BTN_HOME;
-        s_last_home_repeat_ms = now;
-    }
-
-    if ((arm_up || arm_down) && (now - s_last_arm_repeat_ms >= 60)) {
-        if (arm_up) buttons |= CURIE_CTRL_BTN_ARM_UP;
-        if (arm_down) buttons |= CURIE_CTRL_BTN_ARM_DOWN;
-        s_last_arm_repeat_ms = now;
-    }
-
     return buttons;
+}
+
+static int read_battery_percent(void) {
+#if CONTROLLER_BATTERY_ADC_ENABLED
+    int raw = 0;
+    int millivolts = 0;
+    adc_oneshot_read(s_adc_unit, ADC_CHANNEL_6, &raw);
+    millivolts = (raw * 3300 * CONTROLLER_BATTERY_DIVIDER_X1000) / (4095 * 1000);
+    if (millivolts < 3300) return 0;
+    if (millivolts > 4200) return 100;
+    return ((millivolts - 3300) * 100) / 900;
+#else
+    return -1;
+#endif
 }
 
 static void main_loop_task(void *arg) {
     keypad_init();
     buttons_init();
+    controller_ui_init();
 
     // Configure ADC oneshot unit
     adc_oneshot_unit_init_cfg_t init_config = {
@@ -329,6 +523,9 @@ static void main_loop_task(void *arg) {
     };
     ESP_ERROR_CHECK(adc_oneshot_config_channel(s_adc_unit, ADC_CHANNEL_4, &chan_config)); // GPIO 32
     ESP_ERROR_CHECK(adc_oneshot_config_channel(s_adc_unit, ADC_CHANNEL_5, &chan_config)); // GPIO 33
+#if CONTROLLER_BATTERY_ADC_ENABLED
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(s_adc_unit, ADC_CHANNEL_6, &chan_config)); // GPIO 34
+#endif
 
     ESP_LOGI(TAG, "Keypad, Buttons, and ADC initialized");
 
@@ -354,6 +551,9 @@ static void main_loop_task(void *arg) {
             packet[0] = CURIE_BLE_MAGIC;
             packet[1] = analog_to_axis_byte(raw_y, true);  // Throttle
             packet[2] = analog_to_axis_byte(raw_x, false); // Steering
+            if (!s_joy_button_down) {
+                apply_dpad_override(&packet[1], &packet[2]);
+            }
             packet[3] = collect_buttons();
             packet[4] = s_pending_expression;
             packet[5] = s_speed_mode;
@@ -362,17 +562,37 @@ static void main_loop_task(void *arg) {
 
             int rc = ble_gattc_write_no_rsp_flat(s_conn_handle, s_chr_value_handle, packet, sizeof(packet));
             if (rc != 0) {
-                ESP_LOGE(TAG, "Error sending BLE flat write no-rsp: %d", rc);
+                s_packets_failed++;
+                s_consecutive_write_errors++;
+                ESP_LOGW(TAG, "BLE write failed rc=%d streak=%lu", rc, (unsigned long)s_consecutive_write_errors);
+                if (rc == BLE_HS_ENOTCONN || s_consecutive_write_errors >= WRITE_ERROR_RECONNECT_THRESHOLD) {
+                    ble_client_force_rescan("write path stalled");
+                }
+            } else {
+                s_packets_sent++;
+                s_consecutive_write_errors = 0;
+                s_last_good_tx_us = esp_timer_get_time();
             }
             s_pending_expression = 0;
         }
+
+        if (s_connecting && !s_connected && (esp_timer_get_time() - s_connect_started_us) > DISCOVERY_TIMEOUT_US) {
+            ble_client_force_rescan("discovery/connect timeout");
+        }
+
+        log_controller_status();
+        controller_ui_render(s_connected,
+                             s_connecting,
+                             expression_label(s_current_expression_id),
+                             speed_label(s_speed_mode),
+                             read_battery_percent());
 
         vTaskDelay(pdMS_TO_TICKS(SEND_INTERVAL_MS));
     }
 }
 
 void buttons_init(void) {
-    gpio_num_t pins[] = {GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_21, GPIO_NUM_22, GPIO_NUM_25};
+    gpio_num_t pins[] = {GPIO_NUM_27, GPIO_NUM_26, GPIO_NUM_21, GPIO_NUM_22, GPIO_NUM_25};
     for (int i = 0; i < 5; i++) {
         gpio_config_t cfg = {
             .pin_bit_mask = (1ULL << pins[i]),
