@@ -33,8 +33,10 @@ static const char *TAG = "CTRL_BLE_CLIENT";
 static const uint8_t CURIE_BLE_MAGIC = 0xC4;
 #define SEND_INTERVAL_MS 40
 #define STATUS_LOG_INTERVAL_US 10000000
-#define DISCOVERY_TIMEOUT_US 5000000
+#define DISCOVERY_TIMEOUT_US 12000000
 #define WRITE_ERROR_RECONNECT_THRESHOLD 4
+#define JOYSTICK_CALIBRATION_SAMPLES 24
+#define JOYSTICK_DEADZONE 250
 #define CONTROLLER_BATTERY_ADC_ENABLED 0
 #define CONTROLLER_BATTERY_DIVIDER_X1000 2000
 
@@ -56,6 +58,7 @@ static bool s_service_found = false;
 static bool s_char_found = false;
 static bool s_connecting = false;
 static int64_t s_connect_started_us = 0;
+static bool s_recovery_inflight = false;
 static int64_t s_last_good_tx_us = 0;
 static int64_t s_last_status_log_us = 0;
 static uint32_t s_packets_sent = 0;
@@ -75,6 +78,8 @@ static int64_t s_joy_button_press_us = 0;
 static bool s_joy_long_handled = false;
 static bool s_joy_combo_used = false;
 static uint8_t s_last_logged_dpad_mask = 0xFF;
+static int s_joy_center_x = 2048;
+static int s_joy_center_y = 2048;
 
 // ADC handle
 static adc_oneshot_unit_handle_t s_adc_unit = NULL;
@@ -100,13 +105,13 @@ static uint8_t clamp_to_byte(int value) {
     return (uint8_t)value;
 }
 
-static uint8_t analog_to_axis_byte(int raw, bool invert) {
-    const int center = 2048;
-    const int deadzone = 450;
-    if (abs(raw - center) <= deadzone) {
+static uint8_t analog_to_axis_byte(int raw, int center, bool invert) {
+    if (abs(raw - center) <= JOYSTICK_DEADZONE) {
         return 128;
     }
-    int adjusted = (raw * 255) / 4095;
+    int adjusted = raw - center + 2048;
+    adjusted = adjusted < 0 ? 0 : (adjusted > 4095 ? 4095 : adjusted);
+    adjusted = (adjusted * 255) / 4095;
     if (invert) {
         adjusted = 255 - adjusted;
     }
@@ -152,18 +157,29 @@ static void clear_link_state(void) {
     s_char_found = false;
     s_chr_value_handle = 0;
     s_conn_handle = 0;
+    s_connect_started_us = 0;
     s_consecutive_write_errors = 0;
 }
 
 static void ble_client_force_rescan(const char *reason) {
+    if (s_recovery_inflight) {
+        ESP_LOGW(TAG, "Recovery already in flight, skipping duplicate rescan: %s", reason);
+        return;
+    }
+
+    s_recovery_inflight = true;
     ESP_LOGW(TAG, "Forcing BLE recovery: %s", reason);
     if (s_conn_handle != 0) {
         int rc = ble_gap_terminate(s_conn_handle, BLE_ERR_REM_USER_CONN_TERM);
         if (rc != 0 && rc != BLE_HS_ENOTCONN) {
             ESP_LOGW(TAG, "ble_gap_terminate rc=%d during recovery", rc);
         }
+        if (rc == 0) {
+            return;
+        }
     }
     clear_link_state();
+    s_recovery_inflight = false;
     ble_client_scan();
 }
 
@@ -188,14 +204,14 @@ static void log_controller_status(void) {
 
 static uint8_t read_dpad_mask(void) {
     uint8_t mask = 0;
-    if (gpio_get_level(GPIO_NUM_27) == 0) mask |= (1 << 0); // Up
-    if (gpio_get_level(GPIO_NUM_26) == 0) mask |= (1 << 1); // Right
+    if (gpio_get_level(GPIO_NUM_26) == 0) mask |= (1 << 0); // Up
+    if (gpio_get_level(GPIO_NUM_27) == 0) mask |= (1 << 1); // Right
     if (gpio_get_level(GPIO_NUM_21) == 0) mask |= (1 << 2); // Down
     if (gpio_get_level(GPIO_NUM_22) == 0) mask |= (1 << 3); // Left
     return mask;
 }
 
-static void apply_dpad_override(uint8_t *throttle, uint8_t *steering) {
+static void log_dpad_state(void) {
     uint8_t dpad = read_dpad_mask();
     bool up = (dpad & (1 << 0)) != 0;
     bool right = (dpad & (1 << 1)) != 0;
@@ -203,37 +219,34 @@ static void apply_dpad_override(uint8_t *throttle, uint8_t *steering) {
     bool left = (dpad & (1 << 3)) != 0;
 
     if (dpad != s_last_logged_dpad_mask) {
-        ESP_LOGI(TAG, "Drive buttons: U=%d R=%d D=%d L=%d", up, right, down, left);
+        ESP_LOGI(TAG, "D-pad state: U=%d R=%d D=%d L=%d", up, right, down, left);
         s_last_logged_dpad_mask = dpad;
-        if (up && !down) {
-            controller_ui_show_action("GO!");
-        } else if (down && !up) {
-            controller_ui_show_action("BACK");
-        } else if (left && !right) {
-            controller_ui_show_action("LEFT");
-        } else if (right && !left) {
-            controller_ui_show_action("RIGHT");
-        }
+    }
+}
+
+static void calibrate_joystick(void) {
+    int sum_x = 0;
+    int sum_y = 0;
+
+    for (int i = 0; i < JOYSTICK_CALIBRATION_SAMPLES; i++) {
+        int raw_x = 2048;
+        int raw_y = 2048;
+        adc_oneshot_read(s_adc_unit, ADC_CHANNEL_4, &raw_x);
+        adc_oneshot_read(s_adc_unit, ADC_CHANNEL_5, &raw_y);
+        sum_x += raw_x;
+        sum_y += raw_y;
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 
-    if (dpad == 0) {
-        return;
+    s_joy_center_x = sum_x / JOYSTICK_CALIBRATION_SAMPLES;
+    s_joy_center_y = sum_y / JOYSTICK_CALIBRATION_SAMPLES;
+    if (abs(s_joy_center_x - 2048) > 700) {
+        s_joy_center_x = 2048;
     }
-
-    *throttle = 128;
-    *steering = 128;
-
-    if (up && !down) {
-        *throttle = 0;
-    } else if (down && !up) {
-        *throttle = 255;
+    if (abs(s_joy_center_y - 2048) > 700) {
+        s_joy_center_y = 2048;
     }
-
-    if (left && !right) {
-        *steering = 0;
-    } else if (right && !left) {
-        *steering = 255;
-    }
+    ESP_LOGI(TAG, "Joystick calibrated: center_x=%d center_y=%d", s_joy_center_x, s_joy_center_y);
 }
 
 // Characteristic Discovery Callback
@@ -254,9 +267,14 @@ static int ble_client_on_disc_chr(uint16_t conn_handle, const struct ble_gatt_er
         if (!s_char_found) {
             ble_client_force_rescan("required characteristic not found");
         } else {
+            s_connect_started_us = 0;
             ESP_LOGI(TAG, "BLE Characteristic discovery complete");
         }
     } else {
+        if (error->status == BLE_HS_ENOTCONN) {
+            ESP_LOGW(TAG, "Characteristic discovery ended after disconnect");
+            return 0;
+        }
         ESP_LOGE(TAG, "BLE Characteristic discovery error: %d", error->status);
         ble_client_force_rescan("characteristic discovery error");
     }
@@ -280,6 +298,10 @@ static int ble_client_on_disc_svc(uint16_t conn_handle, const struct ble_gatt_er
             ESP_LOGI(TAG, "BLE Service discovery complete");
         }
     } else {
+        if (error->status == BLE_HS_ENOTCONN) {
+            ESP_LOGW(TAG, "Service discovery ended after disconnect");
+            return 0;
+        }
         ESP_LOGE(TAG, "BLE Service discovery error: %d", error->status);
         ble_client_force_rescan("service discovery error");
     }
@@ -317,9 +339,15 @@ static int ble_client_gap_event(struct ble_gap_event *event, void *arg) {
         case BLE_GAP_EVENT_CONNECT:
             if (event->connect.status == 0) {
                 s_conn_handle = event->connect.conn_handle;
+                s_connect_started_us = esp_timer_get_time();
                 ESP_LOGI(TAG, "Successfully connected to robot! Starting service discovery...");
-                ble_gattc_disc_all_svcs(event->connect.conn_handle, ble_client_on_disc_svc, NULL);
+                int rc = ble_gattc_disc_all_svcs(event->connect.conn_handle, ble_client_on_disc_svc, NULL);
+                if (rc != 0) {
+                    ESP_LOGE(TAG, "Failed to start service discovery: %d", rc);
+                    ble_client_force_rescan("unable to start service discovery");
+                }
             } else {
+                s_recovery_inflight = false;
                 clear_link_state();
                 ESP_LOGW(TAG, "BLE connection failed: %d. Restarting scan...", event->connect.status);
                 ble_client_scan();
@@ -328,6 +356,7 @@ static int ble_client_gap_event(struct ble_gap_event *event, void *arg) {
 
         case BLE_GAP_EVENT_DISCONNECT:
             ESP_LOGI(TAG, "Robot disconnected. Reason: %d. Re-scanning...", event->disconnect.reason);
+            s_recovery_inflight = false;
             clear_link_state();
             ble_client_scan();
             return 0;
@@ -527,6 +556,7 @@ static void main_loop_task(void *arg) {
     ESP_ERROR_CHECK(adc_oneshot_config_channel(s_adc_unit, ADC_CHANNEL_6, &chan_config)); // GPIO 34
 #endif
 
+    calibrate_joystick();
     ESP_LOGI(TAG, "Keypad, Buttons, and ADC initialized");
 
     while (1) {
@@ -539,6 +569,7 @@ static void main_loop_task(void *arg) {
 
         // 2. Process Joystick button
         process_joystick_button();
+        log_dpad_state();
 
         // 3. Read Analog Axes
         int raw_x = 2048, raw_y = 2048;
@@ -549,11 +580,8 @@ static void main_loop_task(void *arg) {
         if (s_connected && s_chr_value_handle != 0) {
             uint8_t packet[8] = {0};
             packet[0] = CURIE_BLE_MAGIC;
-            packet[1] = analog_to_axis_byte(raw_y, true);  // Throttle
-            packet[2] = analog_to_axis_byte(raw_x, false); // Steering
-            if (!s_joy_button_down) {
-                apply_dpad_override(&packet[1], &packet[2]);
-            }
+            packet[1] = analog_to_axis_byte(raw_y, s_joy_center_y, true);  // Throttle
+            packet[2] = analog_to_axis_byte(raw_x, s_joy_center_x, false); // Steering
             packet[3] = collect_buttons();
             packet[4] = s_pending_expression;
             packet[5] = s_speed_mode;
@@ -592,7 +620,7 @@ static void main_loop_task(void *arg) {
 }
 
 void buttons_init(void) {
-    gpio_num_t pins[] = {GPIO_NUM_27, GPIO_NUM_26, GPIO_NUM_21, GPIO_NUM_22, GPIO_NUM_25};
+    gpio_num_t pins[] = {GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_21, GPIO_NUM_22, GPIO_NUM_25};
     for (int i = 0; i < 5; i++) {
         gpio_config_t cfg = {
             .pin_bit_mask = (1ULL << pins[i]),

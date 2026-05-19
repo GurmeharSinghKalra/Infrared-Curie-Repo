@@ -24,8 +24,15 @@
 #define CURIE_M4_RPWM_GPIO 17
 #define CURIE_M4_LPWM_GPIO 4
 
-// Shoulders: preserved from the existing robot harness.
-// Left shoulder was moved off GPIO12 to avoid the strapping-risk pin.
+// Field robot polarity:
+// - both left motors are mounted opposite to the right side
+// - right motors follow the normal sign convention
+#define CURIE_M1_INVERT 1
+#define CURIE_M2_INVERT 0
+#define CURIE_M3_INVERT 1
+#define CURIE_M4_INVERT 0
+
+// Shoulders: current harness uses GPIO19 for the left shoulder signal.
 #define CURIE_LEFT_SHOULDER_GPIO 19
 #define CURIE_RIGHT_SHOULDER_GPIO 2
 
@@ -56,12 +63,10 @@
 #define CURIE_MOUTH_RIGHT_FLIP_ROWS  1
 #define CURIE_MOUTH_RIGHT_FLIP_COLS  0
 
-// In-place turn scaling. Turning at reduced speed is more robust on the current
-// drivetrain than commanding both sides to full opposing duty.
-#define CURIE_TANK_TURN_SCALE_PCT 65
-#define CURIE_LEFT_TURN_SLOW_PCT 25
-#define CURIE_RIGHT_TURN_RIGHT_SIDE_PCT 70
-#define CURIE_RIGHT_TURN_FRONT_LEFT_PCT 20
+// In-place turn scaling. The field robot stalls below about 70% duty during
+// opposing-side turns, so clamp left/right commands to a higher minimum.
+#define CURIE_TANK_TURN_SCALE_PCT 100
+#define CURIE_TANK_TURN_MIN_PCT 75
 
 // Wi-Fi defaults tuned for compatibility-first provisioning.
 #define CURIE_AP_SSID "Infrared Curie Setup"

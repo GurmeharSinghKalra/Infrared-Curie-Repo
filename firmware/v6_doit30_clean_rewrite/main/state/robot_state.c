@@ -185,6 +185,7 @@ void robot_set_expression(robot_expression_t exp) {
 }
 
 void robot_set_profile(motion_profile_t profile) {
+    profile = clamp_int(profile, PROFILE_SMOOTH, PROFILE_AGGRESSIVE);
     xSemaphoreTake(s_mutex, portMAX_DELAY);
     s_robot.profile = profile;
     xSemaphoreGive(s_mutex);

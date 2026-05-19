@@ -70,7 +70,6 @@ NimBLE host task started
 - joystick = analog drive
 - short joystick press = speed mode
 - long joystick press = clear estop
-- D-pad = digital drive override
 - hold joystick press + D-pad:
   - up = arms up
   - down = arms down

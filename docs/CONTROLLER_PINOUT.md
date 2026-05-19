@@ -20,7 +20,7 @@ This controller does not join the robot Wi-Fi. It scans for the robot's BLE serv
 - `4x4 membrane keypad` = expressions and face actions
 - `left joystick` = analog drive
 - `left joystick press` = speed / combo modifier / clear estop
-- `diamond buttons` = digital drive override
+- `diamond buttons` = shoulder/home/estop combo inputs
 - `OLED` = connection state, selected expression, speed mode, and action feedback
 
 ## Left joystick
@@ -50,10 +50,10 @@ Physical arrangement:
 
 | Position | GPIO | Normal action |
 |---|---:|---|
-| `UP` | `27` | drive forward override |
-| `RIGHT` | `26` | drive right override |
-| `DOWN` | `21` | drive backward override |
-| `LEFT` | `22` | drive left override |
+| `UP` | `26` | combo input |
+| `RIGHT` | `27` | combo input |
+| `DOWN` | `21` | combo input |
+| `LEFT` | `22` | combo input |
 
 ### Joystick-button combo actions
 
@@ -191,8 +191,8 @@ LEFT JOYSTICK
   GND -> GND
 
 DIAMOND BUTTONS
-  UP    -> GPIO27 -> button -> GND
-  RIGHT -> GPIO26 -> button -> GND
+  UP    -> GPIO26 -> button -> GND
+  RIGHT -> GPIO27 -> button -> GND
   DOWN  -> GPIO21 -> button -> GND
   LEFT  -> GPIO22 -> button -> GND
 
