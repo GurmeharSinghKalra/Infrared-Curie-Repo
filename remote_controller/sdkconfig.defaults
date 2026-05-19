@@ -1,0 +1,15 @@
+# Enable Bluetooth
+CONFIG_BT_ENABLED=y
+CONFIG_BT_NIMBLE_ENABLED=y
+
+# Configure BT controllers/stacks
+CONFIG_BT_CONTROLLER_ONLY=n
+CONFIG_BT_NIMBLE_MAX_CONNECTIONS=1
+
+# Disable IRAM Wifi optimizations if not using Wifi (we only use BLE!)
+CONFIG_ESP_WIFI_IRAM_OPT=n
+CONFIG_ESP_WIFI_RX_IRAM_OPT=n
+
+# Logging & Flash
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
