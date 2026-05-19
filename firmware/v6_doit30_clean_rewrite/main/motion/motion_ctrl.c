@@ -140,25 +140,6 @@ static void apply_drive_pattern(robot_drive_t drive) {
     int left_pct = clamp_int(drive.left, -100, 100);
     int right_pct = clamp_int(drive.right, -100, 100);
 
-    if (left_pct == 0 && right_pct == 0) {
-        set_motor_pct(0, 0, 0, 0);
-        return;
-    }
-
-    if (left_pct < 0 && right_pct > 0) {
-        int slow = clamp_int((clamp_int(abs(left_pct) > abs(right_pct) ? abs(left_pct) : abs(right_pct), 0, 100) * CURIE_LEFT_TURN_SLOW_PCT) / 100, 12, 35);
-        set_motor_pct(slow, slow, slow, slow);
-        return;
-    }
-
-    if (left_pct > 0 && right_pct < 0) {
-        int magnitude = clamp_int(abs(left_pct) > abs(right_pct) ? abs(left_pct) : abs(right_pct), 0, 100);
-        int right_side = clamp_int((magnitude * CURIE_RIGHT_TURN_RIGHT_SIDE_PCT) / 100, 20, 100);
-        int front_left = clamp_int((magnitude * CURIE_RIGHT_TURN_FRONT_LEFT_PCT) / 100, 8, 35);
-        set_motor_pct(-front_left, -right_side, 0, -right_side);
-        return;
-    }
-
     set_motor_pct(left_pct, right_pct, left_pct, right_pct);
 }
 

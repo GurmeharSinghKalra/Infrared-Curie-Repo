@@ -346,7 +346,7 @@ static int ble_client_gap_event(struct ble_gap_event *event, void *arg) {
 
 static void ble_client_scan(void) {
     struct ble_gap_disc_params disc_params = {
-        .filter_duplicates = 1,
+        .filter_duplicates = 0,
         .passive = 0,
         .itvl = 128,
         .window = 64,
