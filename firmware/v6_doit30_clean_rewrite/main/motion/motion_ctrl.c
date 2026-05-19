@@ -5,15 +5,16 @@
 #include "driver/ledc.h"
 #include "driver/mcpwm_prelude.h"
 #include <stdlib.h>
+#include "driver/gpio.h"
 
 static const char *TAG = "MOTION";
 
 #define SERVO_STEP_DEG 4
 
 static const int RAMP_STEPS[] = {
-    [PROFILE_SMOOTH] = 4,
-    [PROFILE_NORMAL] = 8,
-    [PROFILE_AGGRESSIVE] = 20,
+    [PROFILE_SMOOTH] = 2,
+    [PROFILE_NORMAL] = 6,
+    [PROFILE_AGGRESSIVE] = 25,
 };
 
 static mcpwm_cmpr_handle_t cmp_ls, cmp_rs;
@@ -25,6 +26,7 @@ static int clamp_int(int value, int min, int max) {
 }
 
 static mcpwm_cmpr_handle_t setup_servo(int pin, int group_id) {
+    gpio_reset_pin(pin);
     mcpwm_timer_handle_t timer = NULL;
     mcpwm_timer_config_t tcfg = {
         .group_id = group_id,
@@ -120,8 +122,8 @@ static void set_tank_sides(int left_pct, int right_pct) {
 
     int left_fwd = left_pct > 0 ? left_pwm : 0;
     int left_bwd = left_pct < 0 ? left_pwm : 0;
-    int right_fwd = right_pct < 0 ? right_pwm : 0;
-    int right_bwd = right_pct > 0 ? right_pwm : 0;
+    int right_fwd = right_pct > 0 ? right_pwm : 0;
+    int right_bwd = right_pct < 0 ? right_pwm : 0;
 
     // Physical layout:
     //   M1 = front-left, M3 = rear-left
@@ -140,10 +142,11 @@ static int step_toward(int current, int target, int step) {
 static robot_drive_t drive_from_direction(robot_dir_t dir, int speed) {
     int h = speed / 2;
     int turn_speed = (speed * CURIE_TANK_TURN_SCALE_PCT) / 100;
-    turn_speed = clamp_int(turn_speed, 20, 100);
+    turn_speed = clamp_int(turn_speed, 30, 100);
     switch (dir) {
         case DIR_FWD:       return (robot_drive_t){ speed,  speed};
         case DIR_BWD:       return (robot_drive_t){-speed, -speed};
+        // Tank turn: left wheels backward, right wheels forward for left turn
         case DIR_LEFT:      return (robot_drive_t){-turn_speed,  turn_speed};
         case DIR_RIGHT:     return (robot_drive_t){ turn_speed, -turn_speed};
         case DIR_FWD_LEFT:  return (robot_drive_t){ h,      speed};

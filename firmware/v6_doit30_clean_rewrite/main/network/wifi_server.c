@@ -200,12 +200,13 @@ static robot_expression_t str_to_exp(const char *value) {
 }
 
 static motion_profile_t str_to_profile(const char *value) {
-    if (strcmp(value, "smooth") == 0 || strcmp(value, "Smooth") == 0 || strcmp(value, "Precision") == 0) {
+    if (strcmp(value, "Precision") == 0 || strcmp(value, "precision") == 0) {
         return PROFILE_SMOOTH;
     }
-    if (strcmp(value, "aggressive") == 0 || strcmp(value, "Aggressive") == 0) {
+    if (strcmp(value, "Aggressive") == 0 || strcmp(value, "aggressive") == 0) {
         return PROFILE_AGGRESSIVE;
     }
+    /* Default and "Smooth" both map to NORMAL */
     return PROFILE_NORMAL;
 }
 
