@@ -14,7 +14,10 @@ static const char *TAG = "DECISION";
 static int64_t s_controller_priority_until_us = 0;
 
 static bool is_user_source(event_source_t src) {
-    return src == EVT_SRC_WEBSOCKET || src == EVT_SRC_HTTP || src == EVT_SRC_ESPNOW;
+    return src == EVT_SRC_WEBSOCKET ||
+           src == EVT_SRC_HTTP ||
+           src == EVT_SRC_ESPNOW ||
+           src == EVT_SRC_BLE;
 }
 
 static bool is_motion_control_event(event_type_t type) {
@@ -33,7 +36,7 @@ static void auto_enter_manual(event_source_t src) {
     if (!is_user_source(src)) return;
 
     robot_state_t cur = robot_state_get();
-    if (cur == ROBOT_STATE_DEMO && src == EVT_SRC_ESPNOW) {
+    if (cur == ROBOT_STATE_DEMO && (src == EVT_SRC_ESPNOW || src == EVT_SRC_BLE)) {
         demo_mode_stop();
         robot_state_transition(ROBOT_STATE_IDLE);
         cur = robot_state_get();
@@ -98,7 +101,7 @@ void task_decision(void *arg) {
         }
 
         int64_t now_us = esp_timer_get_time();
-        if (evt.source == EVT_SRC_ESPNOW) {
+        if (evt.source == EVT_SRC_ESPNOW || evt.source == EVT_SRC_BLE) {
             s_controller_priority_until_us = now_us + CONTROLLER_PRIORITY_US;
         } else if (is_motion_control_event(evt.type) && controller_has_priority(now_us)) {
             ring_log_write("BLOCKED: dashboard control while controller active");

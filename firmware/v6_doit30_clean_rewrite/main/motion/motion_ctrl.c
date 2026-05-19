@@ -222,7 +222,8 @@ void task_motion(void *arg) {
             }
         }
 
-        int ramp = RAMP_STEPS[profile];
+        int profile_idx = clamp_int((int)profile, PROFILE_SMOOTH, PROFILE_AGGRESSIVE);
+        int ramp = RAMP_STEPS[profile_idx];
         actual_left = step_toward(actual_left, target.left, ramp);
         actual_right = step_toward(actual_right, target.right, ramp);
         apply_drive_pattern((robot_drive_t){actual_left, actual_right});

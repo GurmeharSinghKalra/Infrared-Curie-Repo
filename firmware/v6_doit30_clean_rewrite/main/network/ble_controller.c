@@ -158,14 +158,14 @@ static robot_expression_t expression_from_id(uint8_t id) {
 static void send_drive(robot_drive_t drive) {
     event_payload_t payload = {0};
     payload.drive = drive;
-    event_bus_send(EVT_SET_DRIVE, EVT_SRC_ESPNOW, payload);
+    event_bus_send(EVT_SET_DRIVE, EVT_SRC_BLE, payload);
     log_drive_if_needed(drive);
 }
 
 static void send_expression(robot_expression_t expression) {
     event_payload_t payload = {0};
     payload.expression = expression;
-    event_bus_send(EVT_SET_EXPRESSION, EVT_SRC_ESPNOW, payload);
+    event_bus_send(EVT_SET_EXPRESSION, EVT_SRC_BLE, payload);
     ESP_LOGI(TAG, "Action expression: %s", expression_name(expression));
 }
 
@@ -181,7 +181,7 @@ static void send_mirrored_shoulders(int left_angle) {
         .rs = 180 - left_angle,
         .re = 45,
     };
-    event_bus_send(EVT_SET_ARMS, EVT_SRC_ESPNOW, payload);
+    event_bus_send(EVT_SET_ARMS, EVT_SRC_BLE, payload);
     ESP_LOGI(TAG, "Action arms: ls=%d rs=%d", payload.arms.ls, payload.arms.rs);
 }
 
@@ -246,7 +246,7 @@ static void process_packet(const uint8_t *data) {
     }
 
     if (buttons & CURIE_CTRL_BTN_CLEAR_ESTOP) {
-        event_bus_send_simple(EVT_CLEAR_ERROR, EVT_SRC_ESPNOW);
+        event_bus_send_simple(EVT_CLEAR_ERROR, EVT_SRC_BLE);
         s_estop_sent = false;
         ESP_LOGI(TAG, "Action clear_estop");
     }
@@ -254,7 +254,7 @@ static void process_packet(const uint8_t *data) {
     if (buttons & CURIE_CTRL_BTN_ESTOP) {
         send_drive((robot_drive_t){0, 0});
         if (!s_estop_sent) {
-            event_bus_send_simple(EVT_ESTOP, EVT_SRC_ESPNOW);
+            event_bus_send_simple(EVT_ESTOP, EVT_SRC_BLE);
             s_estop_sent = true;
             ESP_LOGW(TAG, "Action estop");
         }
@@ -265,7 +265,7 @@ static void process_packet(const uint8_t *data) {
 
     event_payload_t speed_payload = {0};
     speed_payload.int_val = clamp_int(speed_mode, 0, 2) == 0 ? 40 : (clamp_int(speed_mode, 0, 2) == 1 ? 70 : 100);
-    event_bus_send(EVT_SET_SPEED, EVT_SRC_ESPNOW, speed_payload);
+    event_bus_send(EVT_SET_SPEED, EVT_SRC_BLE, speed_payload);
     if (speed_payload.int_val != s_last_logged_speed_pct) {
         s_last_logged_speed_pct = speed_payload.int_val;
         ESP_LOGI(TAG, "Action speed: %d", speed_payload.int_val);
@@ -286,7 +286,7 @@ static void process_packet(const uint8_t *data) {
     }
 
     if (buttons & CURIE_CTRL_BTN_BLINK) {
-        event_bus_send_simple(EVT_BLINK, EVT_SRC_ESPNOW);
+        event_bus_send_simple(EVT_BLINK, EVT_SRC_BLE);
         ESP_LOGI(TAG, "Action blink");
     }
 

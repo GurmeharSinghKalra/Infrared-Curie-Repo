@@ -77,6 +77,7 @@ static bool s_joy_combo_used = false;
 static uint8_t s_last_logged_dpad_mask = 0xFF;
 static int s_joy_center_x = 2048;
 static int s_joy_center_y = 2048;
+static bool s_joystick_enabled = true;
 static int64_t s_last_input_log_us = 0;
 
 // ADC handle
@@ -104,6 +105,10 @@ static uint8_t clamp_to_byte(int value) {
 }
 
 static uint8_t analog_to_axis_byte(int raw, int center, bool invert) {
+    if (!s_joystick_enabled) {
+        return 128;
+    }
+
     const int deadzone = 520;
     int delta = raw - center;
     if (abs(delta) <= deadzone) {
@@ -145,7 +150,15 @@ static void calibrate_joystick(void) {
 
     s_joy_center_x = sum_x / samples;
     s_joy_center_y = sum_y / samples;
-    ESP_LOGI(TAG, "Joystick neutral calibrated: x=%d y=%d", s_joy_center_x, s_joy_center_y);
+    s_joystick_enabled = s_joy_center_x > 250 && s_joy_center_x < 3845 &&
+                         s_joy_center_y > 250 && s_joy_center_y < 3845;
+    if (!s_joystick_enabled) {
+        ESP_LOGW(TAG, "Joystick ADC appears disconnected or railed: x=%d y=%d. Analog drive disabled; D-pad still works.",
+                 s_joy_center_x,
+                 s_joy_center_y);
+    } else {
+        ESP_LOGI(TAG, "Joystick neutral calibrated: x=%d y=%d", s_joy_center_x, s_joy_center_y);
+    }
 }
 
 static void log_input_snapshot(int raw_x, int raw_y, uint8_t dpad, uint8_t throttle, uint8_t steering, uint8_t buttons) {
@@ -211,6 +224,10 @@ static void clear_link_state(void) {
     s_chr_value_handle = 0;
     s_conn_handle = 0;
     s_consecutive_write_errors = 0;
+    s_pending_expression = 0;
+    s_pending_button_latch = 0;
+    s_joy_button_down = false;
+    s_joy_combo_used = false;
 }
 
 static void ble_client_force_rescan(const char *reason) {
@@ -352,7 +369,10 @@ static int ble_client_gap_event(struct ble_gap_event *event, void *arg) {
             int rc = ble_hs_adv_parse_fields(&fields, event->disc.data, event->disc.length_data);
             if (rc != 0) return 0;
 
-            if (!s_connecting && fields.name_len == 11 && memcmp(fields.name, "Curie-Robot", 11) == 0) {
+            if (!s_connecting &&
+                fields.name != NULL &&
+                fields.name_len == 11 &&
+                memcmp(fields.name, "Curie-Robot", 11) == 0) {
                 ESP_LOGI(TAG, "Robot found! Connecting...");
                 ble_gap_disc_cancel();
 
@@ -633,6 +653,9 @@ static void main_loop_task(void *arg) {
                 s_consecutive_write_errors = 0;
                 s_last_good_tx_us = esp_timer_get_time();
             }
+            s_pending_expression = 0;
+        } else {
+            s_pending_button_latch = 0;
             s_pending_expression = 0;
         }
 

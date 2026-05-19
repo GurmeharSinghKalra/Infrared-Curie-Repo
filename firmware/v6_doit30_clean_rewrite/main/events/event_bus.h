@@ -37,6 +37,7 @@ typedef enum {
     EVT_SRC_WEBSOCKET,
     EVT_SRC_HTTP,
     EVT_SRC_ESPNOW,
+    EVT_SRC_BLE,
     EVT_SRC_INTERNAL,
     EVT_SRC_WIFI_EVENT
 } event_source_t;
