@@ -360,9 +360,9 @@ static void main_loop_task(void *arg) {
             packet[6] = s_sequence++;
             packet[7] = checksum_xor(packet);
 
-            int rc = ble_gattc_write_flat(s_conn_handle, s_chr_value_handle, packet, sizeof(packet), NULL, NULL);
+            int rc = ble_gattc_write_no_rsp_flat(s_conn_handle, s_chr_value_handle, packet, sizeof(packet));
             if (rc != 0) {
-                ESP_LOGE(TAG, "Error sending BLE flat write: %d", rc);
+                ESP_LOGE(TAG, "Error sending BLE flat write no-rsp: %d", rc);
             }
             s_pending_expression = 0;
         }
