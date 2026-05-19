@@ -51,9 +51,9 @@
 // Mouth display transform. These defaults match the current dual 8x8 daisy-chained
 // mouth hardware with upright-facing matrices.
 #define CURIE_MOUTH_SWAP_HALVES      0
-#define CURIE_MOUTH_LEFT_FLIP_ROWS   1
+#define CURIE_MOUTH_LEFT_FLIP_ROWS   0
 #define CURIE_MOUTH_LEFT_FLIP_COLS   1
-#define CURIE_MOUTH_RIGHT_FLIP_ROWS  1
+#define CURIE_MOUTH_RIGHT_FLIP_ROWS  0
 #define CURIE_MOUTH_RIGHT_FLIP_COLS  1
 
 // In-place turn scaling. Turning at reduced speed is more robust on the current
