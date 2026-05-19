@@ -1,13 +1,11 @@
-#include <WiFi.h>
-#include <esp_now.h>
-#include <esp_wifi.h>
-#include <esp_system.h>
+#include <Arduino.h>
 #include <Keypad.h>
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEScan.h>
+#include <BLEAdvertisedDevice.h>
 
-// ==========================================
-// CONTROLLER -> ROBOT ESP-NOW PACKET
-// ==========================================
-static const uint8_t CURIE_ESPNOW_MAGIC = 0xC4;
+static const uint8_t CURIE_BLE_MAGIC = 0xC4;
 static const uint8_t CURIE_CTRL_BTN_ESTOP = 1 << 0;
 static const uint8_t CURIE_CTRL_BTN_HOME = 1 << 1;
 static const uint8_t CURIE_CTRL_BTN_ARM_UP = 1 << 2;
@@ -15,16 +13,20 @@ static const uint8_t CURIE_CTRL_BTN_ARM_DOWN = 1 << 3;
 static const uint8_t CURIE_CTRL_BTN_CLEAR_ESTOP = 1 << 4;
 static const uint8_t CURIE_CTRL_BTN_BLINK = 1 << 5;
 
-static const uint8_t ROBOT_AP_CHANNEL = 1;
-static const uint8_t BROADCAST_ADDR[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 static const uint32_t SEND_INTERVAL_MS = 40;
 static const uint32_t SHOULDER_HOLD_REPEAT_MS = 60;
 static const uint32_t HOME_HOLD_REPEAT_MS = 350;
 static const uint32_t CLEAR_HOLD_MS = 1200;
 
-// ==========================================
-// PINOUT
-// ==========================================
+static BLEUUID serviceUUID("12345678-1234-5678-1234-56789abcdef0");
+static BLEUUID charUUID("12345678-1234-5678-1234-56789abcdef1");
+
+static boolean doConnect = false;
+static boolean connected = false;
+static boolean doScan = false;
+static BLERemoteCharacteristic* pRemoteCharacteristic;
+static BLEAdvertisedDevice* myDevice;
+
 const byte ROWS = 4;
 const byte COLS = 4;
 char keys[ROWS][COLS] = {
@@ -46,12 +48,8 @@ static const int PIN_BTN_RIGHT = 27;
 static const int PIN_BTN_DOWN = 21;
 static const int PIN_BTN_LEFT = 22;
 
-// ==========================================
-// STATE
-// ==========================================
-static bool s_espnow_ready = false;
 static uint8_t s_sequence = 0;
-static uint8_t s_speed_mode = 1;  // 0=40%, 1=70%, 2=100%
+static uint8_t s_speed_mode = 1;
 static uint8_t s_pending_expression = 0;
 static uint8_t s_pending_button_latch = 0;
 static uint8_t s_expression_page = 0;
@@ -94,92 +92,69 @@ static uint8_t analog_to_axis_byte(int raw, bool invert) {
   return clamp_to_byte(adjusted);
 }
 
-static void on_data_sent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
-  if (status != ESP_NOW_SEND_SUCCESS) {
-    Serial.println("ESP-NOW send failed");
+class MyClientCallback : public BLEClientCallbacks {
+  void onConnect(BLEClient* pclient) {}
+  void onDisconnect(BLEClient* pclient) {
+    connected = false;
+    Serial.println("Disconnected");
+    doScan = true;
   }
+};
+
+bool connectToServer() {
+    Serial.print("Connecting to ");
+    Serial.println(myDevice->getAddress().toString().c_str());
+    
+    BLEClient* pClient = BLEDevice::createClient();
+    pClient->setClientCallbacks(new MyClientCallback());
+
+    if (!pClient->connect(myDevice)) return false;
+    Serial.println("Connected to server");
+
+    BLERemoteService* pRemoteService = pClient->getService(serviceUUID);
+    if (pRemoteService == nullptr) {
+      pClient->disconnect();
+      return false;
+    }
+
+    pRemoteCharacteristic = pRemoteService->getCharacteristic(charUUID);
+    if (pRemoteCharacteristic == nullptr) {
+      pClient->disconnect();
+      return false;
+    }
+
+    connected = true;
+    return true;
 }
 
-static void init_espnow(void) {
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect(true, true);
-  delay(100);
-
-  if (esp_wifi_set_channel(ROBOT_AP_CHANNEL, WIFI_SECOND_CHAN_NONE) != ESP_OK) {
-    Serial.println("Failed to set Wi-Fi channel for ESP-NOW");
+class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
+  void onResult(BLEAdvertisedDevice advertisedDevice) {
+    if (advertisedDevice.getName() == "Curie-Robot") {
+      BLEDevice::getScan()->stop();
+      myDevice = new BLEAdvertisedDevice(advertisedDevice);
+      doConnect = true;
+      doScan = false;
+    }
   }
-
-  if (esp_now_init() != ESP_OK) {
-    Serial.println("ESP-NOW init failed");
-    return;
-  }
-
-  esp_now_register_send_cb(on_data_sent);
-
-  esp_now_peer_info_t peer = {};
-  memcpy(peer.peer_addr, BROADCAST_ADDR, sizeof(BROADCAST_ADDR));
-  peer.channel = ROBOT_AP_CHANNEL;
-  peer.ifidx = WIFI_IF_STA;
-  peer.encrypt = false;
-
-  esp_now_del_peer(BROADCAST_ADDR);
-  if (esp_now_add_peer(&peer) != ESP_OK) {
-    Serial.println("Failed to add ESP-NOW broadcast peer");
-    return;
-  }
-
-  s_espnow_ready = true;
-  Serial.println("ESP-NOW controller ready on channel 1");
-}
-
-static const char* expression_name_from_id(uint8_t id) {
-  switch (id) {
-    case 1:  return "happy";
-    case 2:  return "sad";
-    case 3:  return "angry";
-    case 4:  return "fear";
-    case 5:  return "disgust";
-    case 6:  return "confused";
-    case 7:  return "contempt";
-    case 8:  return "thoughtful";
-    case 9:  return "shy";
-    case 10: return "funny";
-    case 11: return "surprised";
-    case 12: return "excited";
-    case 13: return "neutral";
-    case 14: return "wink";
-    case 15: return "love";
-    case 16: return "sleep";
-    case 17: return "scan";
-    default: return "none";
-  }
-}
+};
 
 static void queue_expression(uint8_t id) {
   s_pending_expression = id;
-  Serial.print("Expression -> ");
-  Serial.println(expression_name_from_id(id));
 }
 
 static void queue_expression_from_key(char key) {
   if (key == 'D') {
     s_expression_page ^= 1;
-    Serial.print("Expression page -> ");
-    Serial.println(s_expression_page == 0 ? "core" : "special");
     return;
   }
-
   if (key == '*') {
     s_pending_button_latch |= CURIE_CTRL_BTN_BLINK;
-    Serial.println("Blink queued");
     return;
   }
-
   if (key == '#') {
     queue_expression((uint8_t)random(1, 13));
     return;
   }
-
   if (key == '0') {
     queue_expression(13);
     return;
@@ -199,35 +174,30 @@ static void queue_expression_from_key(char key) {
       case 'A': queue_expression(10); break;
       case 'B': queue_expression(11); break;
       case 'C': queue_expression(12); break;
-      default: break;
     }
-    return;
-  }
-
-  switch (key) {
-    case '1': queue_expression(16); break;  // sleep
-    case '2': queue_expression(17); break;  // scan
-    case '3': queue_expression(15); break;  // love
-    case '4': queue_expression(14); break;  // wink
-    case '5': queue_expression(8); break;   // thoughtful
-    case '6': queue_expression(10); break;  // funny
-    case '7': queue_expression(11); break;  // surprised
-    case '8': queue_expression(12); break;  // excited
-    case '9': queue_expression(4); break;   // fear
-    case 'A': queue_expression(5); break;   // disgust
-    case 'B': queue_expression(6); break;   // confused
-    case 'C': queue_expression(7); break;   // contempt
-    default: break;
+  } else {
+    switch (key) {
+      case '1': queue_expression(16); break;
+      case '2': queue_expression(17); break;
+      case '3': queue_expression(15); break;
+      case '4': queue_expression(14); break;
+      case '5': queue_expression(8); break;
+      case '6': queue_expression(10); break;
+      case '7': queue_expression(11); break;
+      case '8': queue_expression(12); break;
+      case '9': queue_expression(4); break;
+      case 'A': queue_expression(5); break;
+      case 'B': queue_expression(6); break;
+      case 'C': queue_expression(7); break;
+    }
   }
 }
 
 static void process_keypad(void) {
   char key = keypad.getKey();
-  if (!key) return;
-
-  queue_expression_from_key(key);
-  Serial.print("Key pressed: ");
-  Serial.println(key);
+  if (key) {
+    queue_expression_from_key(key);
+  }
 }
 
 static void process_joystick_button(void) {
@@ -241,8 +211,6 @@ static void process_joystick_button(void) {
   } else if (!pressed && s_joy_button_down) {
     if (!s_joy_long_handled) {
       s_speed_mode = (s_speed_mode + 1) % 3;
-      Serial.print("Speed mode -> ");
-      Serial.println(s_speed_mode);
     }
     s_joy_button_down = false;
   }
@@ -250,7 +218,6 @@ static void process_joystick_button(void) {
   if (pressed && !s_joy_long_handled && (now - s_joy_button_press_ms) >= CLEAR_HOLD_MS) {
     s_pending_button_latch |= CURIE_CTRL_BTN_CLEAR_ESTOP;
     s_joy_long_handled = true;
-    Serial.println("Queued clear estop");
   }
 }
 
@@ -264,9 +231,7 @@ static uint8_t collect_buttons(void) {
   bool home = digitalRead(PIN_BTN_LEFT) == LOW;
   bool estop = digitalRead(PIN_BTN_RIGHT) == LOW;
 
-  if (estop) {
-    buttons |= CURIE_CTRL_BTN_ESTOP;
-  }
+  if (estop) buttons |= CURIE_CTRL_BTN_ESTOP;
 
   if (home && (now - s_last_home_repeat_ms >= HOME_HOLD_REPEAT_MS)) {
     buttons |= CURIE_CTRL_BTN_HOME;
@@ -274,12 +239,8 @@ static uint8_t collect_buttons(void) {
   }
 
   if ((arm_up || arm_down) && (now - s_last_arm_repeat_ms >= SHOULDER_HOLD_REPEAT_MS)) {
-    if (arm_up) {
-      buttons |= CURIE_CTRL_BTN_ARM_UP;
-    }
-    if (arm_down) {
-      buttons |= CURIE_CTRL_BTN_ARM_DOWN;
-    }
+    if (arm_up) buttons |= CURIE_CTRL_BTN_ARM_UP;
+    if (arm_down) buttons |= CURIE_CTRL_BTN_ARM_DOWN;
     s_last_arm_repeat_ms = now;
   }
 
@@ -287,12 +248,12 @@ static uint8_t collect_buttons(void) {
 }
 
 static void send_packet(void) {
-  if (!s_espnow_ready) {
+  if (!connected || pRemoteCharacteristic == nullptr) {
     return;
   }
 
   uint8_t packet[8] = {0};
-  packet[0] = CURIE_ESPNOW_MAGIC;
+  packet[0] = CURIE_BLE_MAGIC;
   packet[1] = analog_to_axis_byte(analogRead(PIN_JOY_Y), true);
   packet[2] = analog_to_axis_byte(analogRead(PIN_JOY_X), false);
   packet[3] = collect_buttons();
@@ -301,19 +262,12 @@ static void send_packet(void) {
   packet[6] = s_sequence++;
   packet[7] = checksum_xor(packet);
 
-  esp_err_t err = esp_now_send(BROADCAST_ADDR, packet, sizeof(packet));
-  if (err != ESP_OK) {
-    Serial.print("esp_now_send error: ");
-    Serial.println((int)err);
-  }
-
+  pRemoteCharacteristic->writeValue(packet, sizeof(packet), false);
   s_pending_expression = 0;
 }
 
 void setup() {
   Serial.begin(115200);
-  delay(200);
-  Serial.println("Curie controller boot");
   randomSeed((uint32_t)esp_random());
 
   pinMode(PIN_JOY_SW, INPUT_PULLUP);
@@ -322,10 +276,30 @@ void setup() {
   pinMode(PIN_BTN_DOWN, INPUT_PULLUP);
   pinMode(PIN_BTN_LEFT, INPUT_PULLUP);
 
-  init_espnow();
+  BLEDevice::init("");
+  BLEScan* pBLEScan = BLEDevice::getScan();
+  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+  pBLEScan->setInterval(1349);
+  pBLEScan->setWindow(449);
+  pBLEScan->setActiveScan(true);
+  pBLEScan->start(5, false);
+
+  Serial.println("Curie BLE Controller ready");
 }
 
 void loop() {
+  if (doConnect) {
+    if (connectToServer()) {
+      Serial.println("Ready to send.");
+    }
+    doConnect = false;
+  }
+
+  if (doScan) {
+    BLEDevice::getScan()->start(5, false);
+    doScan = false;
+  }
+
   process_keypad();
   process_joystick_button();
 

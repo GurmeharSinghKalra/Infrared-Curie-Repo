@@ -22,10 +22,9 @@ static const char *TAG = "DISPLAY";
 #define BROW_THICK   3
 
 typedef enum {
-    EYE_STYLE_OPEN,
-    EYE_STYLE_WIDE,
-    EYE_STYLE_SQUINT,
-    EYE_STYLE_CLOSED,
+    EYE_STYLE_CIRCLE,
+    EYE_STYLE_CIRCLE_SQUINT,
+    EYE_STYLE_CIRCLE_CLOSED,
 } eye_style_t;
 
 typedef struct {
@@ -145,98 +144,98 @@ static const uint16_t MOUTH_LOST[][8] = {
 
 static const face_profile_t FACE_PROFILES[EXP_COUNT] = {
     [EXP_NEUTRAL] = {
-        .left =  {.style = EYE_STYLE_OPEN,  .width = 72, .height = 20, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 7, .brow_outer_y = 18, .brow_inner_y = 18},
-        .right = {.style = EYE_STYLE_OPEN,  .width = 72, .height = 20, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 7, .brow_outer_y = 18, .brow_inner_y = 18},
+        .left =  {.style = EYE_STYLE_CIRCLE,  .width = 72, .height = 20, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 7, .brow_outer_y = 18, .brow_inner_y = 18},
+        .right = {.style = EYE_STYLE_CIRCLE,  .width = 72, .height = 20, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 7, .brow_outer_y = 18, .brow_inner_y = 18},
         .mouth_frames = MOUTH_NEUTRAL, .mouth_frame_count = 1, .mouth_frame_period = 1,
     },
     [EXP_HAPPY] = {
-        .left =  {.style = EYE_STYLE_OPEN,  .width = 76, .height = 22, .pupil_dx = 0,  .pupil_dy = -1, .pupil_radius = 7, .brow_outer_y = 17, .brow_inner_y = 20},
-        .right = {.style = EYE_STYLE_OPEN,  .width = 76, .height = 22, .pupil_dx = 0,  .pupil_dy = -1, .pupil_radius = 7, .brow_outer_y = 17, .brow_inner_y = 20},
+        .left =  {.style = EYE_STYLE_CIRCLE,  .width = 76, .height = 22, .pupil_dx = 0,  .pupil_dy = -1, .pupil_radius = 7, .brow_outer_y = 17, .brow_inner_y = 20},
+        .right = {.style = EYE_STYLE_CIRCLE,  .width = 76, .height = 22, .pupil_dx = 0,  .pupil_dy = -1, .pupil_radius = 7, .brow_outer_y = 17, .brow_inner_y = 20},
         .mouth_frames = MOUTH_HAPPY, .mouth_frame_count = 2, .mouth_frame_period = 12,
     },
     [EXP_SAD] = {
-        .left =  {.style = EYE_STYLE_OPEN,  .width = 72, .height = 18, .pupil_dx = -1, .pupil_dy = 3,  .pupil_radius = 6, .brow_outer_y = 15, .brow_inner_y = 11},
-        .right = {.style = EYE_STYLE_OPEN,  .width = 72, .height = 18, .pupil_dx = 1,  .pupil_dy = 3,  .pupil_radius = 6, .brow_outer_y = 15, .brow_inner_y = 11},
+        .left =  {.style = EYE_STYLE_CIRCLE,  .width = 72, .height = 18, .pupil_dx = -1, .pupil_dy = 3,  .pupil_radius = 6, .brow_outer_y = 15, .brow_inner_y = 11},
+        .right = {.style = EYE_STYLE_CIRCLE,  .width = 72, .height = 18, .pupil_dx = 1,  .pupil_dy = 3,  .pupil_radius = 6, .brow_outer_y = 15, .brow_inner_y = 11},
         .mouth_frames = MOUTH_SAD, .mouth_frame_count = 2, .mouth_frame_period = 14,
     },
     [EXP_ANGRY] = {
-        .left =  {.style = EYE_STYLE_SQUINT, .width = 76, .height = 10, .pupil_dx = 2,  .pupil_dy = 0,  .pupil_radius = 5, .brow_outer_y = 19, .brow_inner_y = 10},
-        .right = {.style = EYE_STYLE_SQUINT, .width = 76, .height = 10, .pupil_dx = -2, .pupil_dy = 0,  .pupil_radius = 5, .brow_outer_y = 19, .brow_inner_y = 10},
+        .left =  {.style = EYE_STYLE_CIRCLE_SQUINT, .width = 76, .height = 10, .pupil_dx = 2,  .pupil_dy = 0,  .pupil_radius = 5, .brow_outer_y = 19, .brow_inner_y = 10},
+        .right = {.style = EYE_STYLE_CIRCLE_SQUINT, .width = 76, .height = 10, .pupil_dx = -2, .pupil_dy = 0,  .pupil_radius = 5, .brow_outer_y = 19, .brow_inner_y = 10},
         .mouth_frames = MOUTH_ANGRY, .mouth_frame_count = 2, .mouth_frame_period = 10,
     },
     [EXP_FEAR] = {
-        .left =  {.style = EYE_STYLE_WIDE,  .width = 74, .height = 28, .pupil_dx = 0,  .pupil_dy = -2, .pupil_radius = 6, .brow_outer_y = 14, .brow_inner_y = 11},
-        .right = {.style = EYE_STYLE_WIDE,  .width = 74, .height = 28, .pupil_dx = 0,  .pupil_dy = -2, .pupil_radius = 6, .brow_outer_y = 14, .brow_inner_y = 11},
+        .left =  {.style = EYE_STYLE_CIRCLE,  .width = 74, .height = 28, .pupil_dx = 0,  .pupil_dy = -2, .pupil_radius = 6, .brow_outer_y = 14, .brow_inner_y = 11},
+        .right = {.style = EYE_STYLE_CIRCLE,  .width = 74, .height = 28, .pupil_dx = 0,  .pupil_dy = -2, .pupil_radius = 6, .brow_outer_y = 14, .brow_inner_y = 11},
         .mouth_frames = MOUTH_FEAR, .mouth_frame_count = 2, .mouth_frame_period = 8,
     },
     [EXP_DISGUST] = {
-        .left =  {.style = EYE_STYLE_SQUINT, .width = 72, .height = 12, .pupil_dx = 4,  .pupil_dy = 0,  .pupil_radius = 5, .brow_outer_y = 18, .brow_inner_y = 15},
-        .right = {.style = EYE_STYLE_OPEN,   .width = 68, .height = 16, .pupil_dx = -2, .pupil_dy = 1,  .pupil_radius = 5, .brow_outer_y = 17, .brow_inner_y = 19},
+        .left =  {.style = EYE_STYLE_CIRCLE_SQUINT, .width = 72, .height = 12, .pupil_dx = 4,  .pupil_dy = 0,  .pupil_radius = 5, .brow_outer_y = 18, .brow_inner_y = 15},
+        .right = {.style = EYE_STYLE_CIRCLE,   .width = 68, .height = 16, .pupil_dx = -2, .pupil_dy = 1,  .pupil_radius = 5, .brow_outer_y = 17, .brow_inner_y = 19},
         .mouth_frames = MOUTH_DISGUST, .mouth_frame_count = 2, .mouth_frame_period = 12,
     },
     [EXP_CONFUSED] = {
-        .left =  {.style = EYE_STYLE_OPEN,   .width = 70, .height = 17, .pupil_dx = 3,  .pupil_dy = 1,  .pupil_radius = 6, .brow_outer_y = 15, .brow_inner_y = 21},
-        .right = {.style = EYE_STYLE_OPEN,   .width = 70, .height = 20, .pupil_dx = -4, .pupil_dy = -1, .pupil_radius = 6, .brow_outer_y = 21, .brow_inner_y = 13},
+        .left =  {.style = EYE_STYLE_CIRCLE,   .width = 70, .height = 17, .pupil_dx = 3,  .pupil_dy = 1,  .pupil_radius = 6, .brow_outer_y = 15, .brow_inner_y = 21},
+        .right = {.style = EYE_STYLE_CIRCLE,   .width = 70, .height = 20, .pupil_dx = -4, .pupil_dy = -1, .pupil_radius = 6, .brow_outer_y = 21, .brow_inner_y = 13},
         .mouth_frames = MOUTH_CONFUSED, .mouth_frame_count = 2, .mouth_frame_period = 14,
     },
     [EXP_CONTEMPT] = {
-        .left =  {.style = EYE_STYLE_SQUINT, .width = 72, .height = 12, .pupil_dx = 2,  .pupil_dy = 0,  .pupil_radius = 5, .brow_outer_y = 17, .brow_inner_y = 18},
-        .right = {.style = EYE_STYLE_OPEN,   .width = 68, .height = 16, .pupil_dx = -3, .pupil_dy = 1,  .pupil_radius = 5, .brow_outer_y = 15, .brow_inner_y = 20},
+        .left =  {.style = EYE_STYLE_CIRCLE_SQUINT, .width = 72, .height = 12, .pupil_dx = 2,  .pupil_dy = 0,  .pupil_radius = 5, .brow_outer_y = 17, .brow_inner_y = 18},
+        .right = {.style = EYE_STYLE_CIRCLE,   .width = 68, .height = 16, .pupil_dx = -3, .pupil_dy = 1,  .pupil_radius = 5, .brow_outer_y = 15, .brow_inner_y = 20},
         .mouth_frames = MOUTH_CONTEMPT, .mouth_frame_count = 2, .mouth_frame_period = 16,
     },
     [EXP_THOUGHTFUL] = {
-        .left =  {.style = EYE_STYLE_OPEN,   .width = 70, .height = 16, .pupil_dx = 4,  .pupil_dy = -1, .pupil_radius = 6, .brow_outer_y = 17, .brow_inner_y = 15},
-        .right = {.style = EYE_STYLE_OPEN,   .width = 70, .height = 16, .pupil_dx = 2,  .pupil_dy = 2,  .pupil_radius = 6, .brow_outer_y = 16, .brow_inner_y = 17},
+        .left =  {.style = EYE_STYLE_CIRCLE,   .width = 70, .height = 16, .pupil_dx = 4,  .pupil_dy = -1, .pupil_radius = 6, .brow_outer_y = 17, .brow_inner_y = 15},
+        .right = {.style = EYE_STYLE_CIRCLE,   .width = 70, .height = 16, .pupil_dx = 2,  .pupil_dy = 2,  .pupil_radius = 6, .brow_outer_y = 16, .brow_inner_y = 17},
         .mouth_frames = MOUTH_THOUGHTFUL, .mouth_frame_count = 2, .mouth_frame_period = 18,
     },
     [EXP_SHY] = {
-        .left =  {.style = EYE_STYLE_OPEN,   .width = 68, .height = 16, .pupil_dx = -2, .pupil_dy = 4,  .pupil_radius = 5, .brow_outer_y = 18, .brow_inner_y = 20},
-        .right = {.style = EYE_STYLE_OPEN,   .width = 68, .height = 16, .pupil_dx = 2,  .pupil_dy = 4,  .pupil_radius = 5, .brow_outer_y = 18, .brow_inner_y = 20},
+        .left =  {.style = EYE_STYLE_CIRCLE,   .width = 68, .height = 16, .pupil_dx = -2, .pupil_dy = 4,  .pupil_radius = 5, .brow_outer_y = 18, .brow_inner_y = 20},
+        .right = {.style = EYE_STYLE_CIRCLE,   .width = 68, .height = 16, .pupil_dx = 2,  .pupil_dy = 4,  .pupil_radius = 5, .brow_outer_y = 18, .brow_inner_y = 20},
         .mouth_frames = MOUTH_SHY, .mouth_frame_count = 2, .mouth_frame_period = 16,
     },
     [EXP_FUNNY] = {
-        .left =  {.style = EYE_STYLE_OPEN,   .width = 72, .height = 20, .pupil_dx = -1, .pupil_dy = 0,  .pupil_radius = 6, .brow_outer_y = 15, .brow_inner_y = 18},
-        .right = {.style = EYE_STYLE_CLOSED, .width = 72, .height = 10, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 0, .brow_outer_y = 18, .brow_inner_y = 13},
+        .left =  {.style = EYE_STYLE_CIRCLE,   .width = 72, .height = 20, .pupil_dx = -1, .pupil_dy = 0,  .pupil_radius = 6, .brow_outer_y = 15, .brow_inner_y = 18},
+        .right = {.style = EYE_STYLE_CIRCLE_CLOSED, .width = 72, .height = 10, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 0, .brow_outer_y = 18, .brow_inner_y = 13},
         .mouth_frames = MOUTH_FUNNY, .mouth_frame_count = 2, .mouth_frame_period = 10,
     },
     [EXP_SURPRISED] = {
-        .left =  {.style = EYE_STYLE_WIDE,   .width = 76, .height = 30, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 6, .brow_outer_y = 11, .brow_inner_y = 11},
-        .right = {.style = EYE_STYLE_WIDE,   .width = 76, .height = 30, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 6, .brow_outer_y = 11, .brow_inner_y = 11},
+        .left =  {.style = EYE_STYLE_CIRCLE,   .width = 76, .height = 30, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 6, .brow_outer_y = 11, .brow_inner_y = 11},
+        .right = {.style = EYE_STYLE_CIRCLE,   .width = 76, .height = 30, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 6, .brow_outer_y = 11, .brow_inner_y = 11},
         .mouth_frames = MOUTH_SURPRISED, .mouth_frame_count = 2, .mouth_frame_period = 8,
     },
     [EXP_EXCITED] = {
-        .left =  {.style = EYE_STYLE_WIDE,   .width = 78, .height = 24, .pupil_dx = 0,  .pupil_dy = -2, .pupil_radius = 7, .brow_outer_y = 15, .brow_inner_y = 17},
-        .right = {.style = EYE_STYLE_WIDE,   .width = 78, .height = 24, .pupil_dx = 0,  .pupil_dy = -2, .pupil_radius = 7, .brow_outer_y = 15, .brow_inner_y = 17},
+        .left =  {.style = EYE_STYLE_CIRCLE,   .width = 78, .height = 24, .pupil_dx = 0,  .pupil_dy = -2, .pupil_radius = 7, .brow_outer_y = 15, .brow_inner_y = 17},
+        .right = {.style = EYE_STYLE_CIRCLE,   .width = 78, .height = 24, .pupil_dx = 0,  .pupil_dy = -2, .pupil_radius = 7, .brow_outer_y = 15, .brow_inner_y = 17},
         .mouth_frames = MOUTH_EXCITED, .mouth_frame_count = 2, .mouth_frame_period = 8,
     },
     [EXP_WINK] = {
-        .left =  {.style = EYE_STYLE_OPEN,   .width = 74, .height = 21, .pupil_dx = -1, .pupil_dy = -1, .pupil_radius = 6, .brow_outer_y = 16, .brow_inner_y = 19},
-        .right = {.style = EYE_STYLE_CLOSED, .width = 74, .height = 10, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 0, .brow_outer_y = 19, .brow_inner_y = 14},
+        .left =  {.style = EYE_STYLE_CIRCLE,   .width = 74, .height = 21, .pupil_dx = -1, .pupil_dy = -1, .pupil_radius = 6, .brow_outer_y = 16, .brow_inner_y = 19},
+        .right = {.style = EYE_STYLE_CIRCLE_CLOSED, .width = 74, .height = 10, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 0, .brow_outer_y = 19, .brow_inner_y = 14},
         .mouth_frames = MOUTH_WINK, .mouth_frame_count = 1, .mouth_frame_period = 1,
     },
     [EXP_LOVE] = {
-        .left =  {.style = EYE_STYLE_WIDE,   .width = 70, .height = 24, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 7, .brow_outer_y = 15, .brow_inner_y = 18},
-        .right = {.style = EYE_STYLE_WIDE,   .width = 70, .height = 24, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 7, .brow_outer_y = 15, .brow_inner_y = 18},
+        .left =  {.style = EYE_STYLE_CIRCLE,   .width = 70, .height = 24, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 7, .brow_outer_y = 15, .brow_inner_y = 18},
+        .right = {.style = EYE_STYLE_CIRCLE,   .width = 70, .height = 24, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 7, .brow_outer_y = 15, .brow_inner_y = 18},
         .mouth_frames = MOUTH_LOVE, .mouth_frame_count = 1, .mouth_frame_period = 1,
     },
     [EXP_SLEEP] = {
-        .left =  {.style = EYE_STYLE_CLOSED, .width = 76, .height = 8,  .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 0, .brow_outer_y = 18, .brow_inner_y = 19},
-        .right = {.style = EYE_STYLE_CLOSED, .width = 76, .height = 8,  .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 0, .brow_outer_y = 18, .brow_inner_y = 19},
+        .left =  {.style = EYE_STYLE_CIRCLE_CLOSED, .width = 76, .height = 8,  .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 0, .brow_outer_y = 18, .brow_inner_y = 19},
+        .right = {.style = EYE_STYLE_CIRCLE_CLOSED, .width = 76, .height = 8,  .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 0, .brow_outer_y = 18, .brow_inner_y = 19},
         .mouth_frames = MOUTH_SLEEP, .mouth_frame_count = 2, .mouth_frame_period = 20,
     },
     [EXP_SCAN] = {
-        .left =  {.style = EYE_STYLE_WIDE,   .width = 74, .height = 22, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 5, .brow_outer_y = 16, .brow_inner_y = 16},
-        .right = {.style = EYE_STYLE_WIDE,   .width = 74, .height = 22, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 5, .brow_outer_y = 16, .brow_inner_y = 16},
+        .left =  {.style = EYE_STYLE_CIRCLE,   .width = 74, .height = 22, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 5, .brow_outer_y = 16, .brow_inner_y = 16},
+        .right = {.style = EYE_STYLE_CIRCLE,   .width = 74, .height = 22, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 5, .brow_outer_y = 16, .brow_inner_y = 16},
         .mouth_frames = MOUTH_SCAN, .mouth_frame_count = 2, .mouth_frame_period = 6,
     },
     [EXP_LOST] = {
-        .left =  {.style = EYE_STYLE_SQUINT, .width = 72, .height = 9,  .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 0, .brow_outer_y = 16, .brow_inner_y = 20},
-        .right = {.style = EYE_STYLE_SQUINT, .width = 72, .height = 9,  .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 0, .brow_outer_y = 16, .brow_inner_y = 20},
+        .left =  {.style = EYE_STYLE_CIRCLE_SQUINT, .width = 72, .height = 9,  .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 0, .brow_outer_y = 16, .brow_inner_y = 20},
+        .right = {.style = EYE_STYLE_CIRCLE_SQUINT, .width = 72, .height = 9,  .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 0, .brow_outer_y = 16, .brow_inner_y = 20},
         .mouth_frames = MOUTH_LOST, .mouth_frame_count = 1, .mouth_frame_period = 1,
     },
     [EXP_CUSTOM] = {
-        .left =  {.style = EYE_STYLE_OPEN,   .width = 72, .height = 20, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 7, .brow_outer_y = 18, .brow_inner_y = 18},
-        .right = {.style = EYE_STYLE_OPEN,   .width = 72, .height = 20, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 7, .brow_outer_y = 18, .brow_inner_y = 18},
+        .left =  {.style = EYE_STYLE_CIRCLE,   .width = 72, .height = 20, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 7, .brow_outer_y = 18, .brow_inner_y = 18},
+        .right = {.style = EYE_STYLE_CIRCLE,   .width = 72, .height = 20, .pupil_dx = 0,  .pupil_dy = 0,  .pupil_radius = 7, .brow_outer_y = 18, .brow_inner_y = 18},
         .mouth_frames = MOUTH_NEUTRAL, .mouth_frame_count = 1, .mouth_frame_period = 1,
     },
 };
@@ -364,35 +363,28 @@ static void animate_eye_profile(robot_expression_t exp, bool is_left, const eye_
 static void draw_brow(u8g2_t *u8g2, bool is_left, int outer_y, int inner_y) {
     const int outer_x = is_left ? EYE_OUTER_X : EYE_INNER_X;
     const int inner_x = is_left ? EYE_INNER_X : EYE_OUTER_X;
-    for (int offset = 0; offset < BROW_THICK; offset++) {
+    for (int offset = -1; offset <= BROW_THICK; offset++) {
         u8g2_DrawLine(u8g2, outer_x, outer_y + offset, inner_x, inner_y + offset);
     }
 }
 
 static void draw_eye_shape(u8g2_t *u8g2, const eye_profile_t *profile) {
     const int x = EYE_CENTER_X - (profile->width / 2);
-    const int y = EYE_CENTER_Y - (profile->height / 2);
+    const int radius = profile->width / 2;
 
     switch (profile->style) {
-        case EYE_STYLE_CLOSED:
-            u8g2_DrawRBox(u8g2, EYE_BASE_X, EYE_CENTER_Y - 2, 80, 5, 2);
+        case EYE_STYLE_CIRCLE_CLOSED:
+            u8g2_DrawLine(u8g2, EYE_CENTER_X - radius, EYE_CENTER_Y, EYE_CENTER_X + radius, EYE_CENTER_Y);
+            u8g2_DrawLine(u8g2, EYE_CENTER_X - radius, EYE_CENTER_Y + 1, EYE_CENTER_X + radius, EYE_CENTER_Y + 1);
             return;
 
-        case EYE_STYLE_SQUINT:
-            u8g2_DrawRBox(u8g2, x, y, profile->width, profile->height, profile->height / 2);
+        case EYE_STYLE_CIRCLE_SQUINT:
+            u8g2_DrawDisc(u8g2, EYE_CENTER_X, EYE_CENTER_Y, radius, U8G2_DRAW_LOWER_LEFT | U8G2_DRAW_LOWER_RIGHT);
             break;
 
-        case EYE_STYLE_WIDE:
-            u8g2_DrawRBox(u8g2, x, y, profile->width, profile->height, profile->height / 2);
-            u8g2_SetDrawColor(u8g2, 0);
-            u8g2_DrawBox(u8g2, x - 1, y - 3, profile->width + 2, 3);
-            u8g2_DrawBox(u8g2, x - 1, y + profile->height, profile->width + 2, 3);
-            u8g2_SetDrawColor(u8g2, 1);
-            break;
-
-        case EYE_STYLE_OPEN:
+        case EYE_STYLE_CIRCLE:
         default:
-            u8g2_DrawRBox(u8g2, x, y, profile->width, profile->height, profile->height / 2);
+            u8g2_DrawDisc(u8g2, EYE_CENTER_X, EYE_CENTER_Y, radius, U8G2_DRAW_ALL);
             break;
     }
 

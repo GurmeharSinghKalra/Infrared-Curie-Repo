@@ -10,10 +10,10 @@ idf_component_register(
         "logging/ring_log.c"
         "demo/demo_mode.c"
         "network/wifi_server.c"
-        "network/espnow_controller.c"
+        "network/ble_controller.c"
         "drivers/max7219_bsp.c"
     INCLUDE_DIRS "."
-    REQUIRES driver esp_timer esp_wifi esp_http_server nvs_flash json lwip app_update u8g2
+    REQUIRES driver esp_timer esp_wifi esp_http_server nvs_flash json lwip app_update u8g2 bt
     EMBED_FILES "dashboard/index.html"
                 "dashboard/style.css"
                 "dashboard/app.js"

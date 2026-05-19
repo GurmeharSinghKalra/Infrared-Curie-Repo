@@ -8,7 +8,7 @@
 #include "display/display_ctrl.h"
 #include "telemetry/telemetry.h"
 #include "network/wifi_server.h"
-#include "network/espnow_controller.h"
+#include "network/ble_controller.h"
 #include "board/board_config.h"
 #include "esp_log.h"
 
@@ -24,8 +24,8 @@ static void task_start_runtime_modules(void *arg) {
     ESP_LOGI(TAG, "Core runtime modules started");
 
     vTaskDelay(pdMS_TO_TICKS(3000));
-    start_espnow_controller();
-    ESP_LOGI(TAG, "ESP-NOW controller receiver enabled after AP/dashboard startup window");
+    start_ble_controller();
+    ESP_LOGI(TAG, "BLE controller receiver enabled after AP/dashboard startup window");
 
     vTaskDelete(NULL);
 }
@@ -40,5 +40,5 @@ void app_main(void) {
     xTaskCreatePinnedToCore(task_start_runtime_modules, "task_runtime_boot", 4096, NULL, 6, NULL, 0);
 
     ESP_LOGI(TAG, "Curie DOIT DevKit V1 rewrite boot complete");
-    ESP_LOGI(TAG, "AP/dashboard path starts first; ESP-NOW is enabled after the initial startup window");
+    ESP_LOGI(TAG, "AP/dashboard path starts first; BLE is enabled after the initial startup window");
 }

@@ -1,3 +1,0 @@
--- Found Git: /usr/bin/git (found version "2.43.0") 
--- Component directory /home/gurmehar/esp/esp-idf/components/esp_vfs_console does not contain a CMakeLists.txt file. No component will be added
--- Configuring incomplete, errors occurred!

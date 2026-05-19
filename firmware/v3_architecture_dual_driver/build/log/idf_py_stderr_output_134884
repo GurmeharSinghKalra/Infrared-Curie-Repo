@@ -1,3 +1,0 @@
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/main/network/wifi_server.c:107:15: warning: 'read_json_post' defined but not used [-Wunused-function]
-  107 | static cJSON* read_json_post(httpd_req_t *req) {
-      |               ^~~~~~~~~~~~~~

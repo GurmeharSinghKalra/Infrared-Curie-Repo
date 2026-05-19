@@ -120,8 +120,8 @@ static void set_tank_sides(int left_pct, int right_pct) {
 
     int left_fwd = left_pct > 0 ? left_pwm : 0;
     int left_bwd = left_pct < 0 ? left_pwm : 0;
-    int right_fwd = right_pct > 0 ? right_pwm : 0;
-    int right_bwd = right_pct < 0 ? right_pwm : 0;
+    int right_fwd = right_pct < 0 ? right_pwm : 0;
+    int right_bwd = right_pct > 0 ? right_pwm : 0;
 
     // Physical layout:
     //   M1 = front-left, M3 = rear-left

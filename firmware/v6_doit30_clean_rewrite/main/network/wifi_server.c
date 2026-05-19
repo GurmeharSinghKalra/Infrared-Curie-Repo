@@ -494,6 +494,9 @@ static esp_err_t ws_handler(httpd_req_t *req) {
                 current.rs = 180 - angle;
             } else if (strcmp(joint->valuestring, "right_shoulder") == 0) {
                 current.rs = angle;
+            } else if (strcmp(joint->valuestring, "arms") == 0) {
+                current.ls = angle;
+                current.rs = 180 - angle;
             }
             payload.arms = current;
             queued = event_bus_send(EVT_SET_ARMS, EVT_SRC_WEBSOCKET, payload);
@@ -623,8 +626,8 @@ static void wifi_event_handler(void *arg, esp_event_base_t base, int32_t id, voi
                     s_net_info.ap_clients--;
                 }
                 telemetry_unregister_ws();
-                ESP_LOGI(TAG, "Client disconnected from AP: " MACSTR ", AID=%d, reason=%d",
-                         MAC2STR(event->mac), event->aid, event->reason);
+                ESP_LOGI(TAG, "Client disconnected from AP: " MACSTR ", AID=%d",
+                         MAC2STR(event->mac), event->aid);
                 break;
             }
 
@@ -656,8 +659,8 @@ static void wifi_event_handler(void *arg, esp_event_base_t base, int32_t id, voi
 
     if (base == IP_EVENT && id == IP_EVENT_AP_STAIPASSIGNED) {
         ip_event_ap_staipassigned_t *event = (ip_event_ap_staipassigned_t *)data;
-        ESP_LOGI(TAG, "AP assigned IP " IPSTR " to " MACSTR,
-                 IP2STR(&event->ip), MAC2STR(event->mac));
+        ESP_LOGI(TAG, "AP assigned IP " IPSTR,
+                 IP2STR(&event->ip));
         return;
     }
 

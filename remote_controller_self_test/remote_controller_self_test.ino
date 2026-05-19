@@ -1,8 +1,10 @@
-#include <WiFi.h>
-#include <esp_now.h>
-#include <esp_wifi.h>
+#include <Arduino.h>
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEScan.h>
+#include <BLEAdvertisedDevice.h>
 
-static const uint8_t CURIE_ESPNOW_MAGIC = 0xC4;
+static const uint8_t CURIE_BLE_MAGIC = 0xC4;
 static const uint8_t CURIE_CTRL_BTN_ESTOP = 1 << 0;
 static const uint8_t CURIE_CTRL_BTN_HOME = 1 << 1;
 static const uint8_t CURIE_CTRL_BTN_ARM_UP = 1 << 2;
@@ -10,10 +12,15 @@ static const uint8_t CURIE_CTRL_BTN_ARM_DOWN = 1 << 3;
 static const uint8_t CURIE_CTRL_BTN_CLEAR_ESTOP = 1 << 4;
 static const uint8_t CURIE_CTRL_BTN_BLINK = 1 << 5;
 
-static const uint8_t ROBOT_AP_CHANNEL = 1;
-static const uint8_t BROADCAST_ADDR[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+static BLEUUID serviceUUID("12345678-1234-5678-1234-56789abcdef0");
+static BLEUUID charUUID("12345678-1234-5678-1234-56789abcdef1");
 
-static bool s_espnow_ready = false;
+static boolean doConnect = false;
+static boolean connected = false;
+static boolean doScan = false;
+static BLERemoteCharacteristic* pRemoteCharacteristic;
+static BLEAdvertisedDevice* myDevice;
+
 static uint8_t s_sequence = 0;
 static unsigned long s_last_step_ms = 0;
 static int s_step = 0;
@@ -27,12 +34,12 @@ static uint8_t checksum_xor(const uint8_t *data) {
 }
 
 static void send_packet(uint8_t throttle, uint8_t steering, uint8_t buttons, uint8_t expression_id, uint8_t speed_mode) {
-  if (!s_espnow_ready) {
+  if (!connected || pRemoteCharacteristic == nullptr) {
     return;
   }
 
   uint8_t packet[8] = {0};
-  packet[0] = CURIE_ESPNOW_MAGIC;
+  packet[0] = CURIE_BLE_MAGIC;
   packet[1] = throttle;
   packet[2] = steering;
   packet[3] = buttons;
@@ -41,40 +48,62 @@ static void send_packet(uint8_t throttle, uint8_t steering, uint8_t buttons, uin
   packet[6] = s_sequence++;
   packet[7] = checksum_xor(packet);
 
-  esp_err_t err = esp_now_send(BROADCAST_ADDR, packet, sizeof(packet));
+  pRemoteCharacteristic->writeValue(packet, sizeof(packet), false);
   Serial.print("step=");
   Serial.print(s_step);
-  Serial.print(" send=");
-  Serial.println((int)err);
+  Serial.println(" sent");
 }
 
-static void init_espnow(void) {
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect(true, true);
-  delay(100);
-
-  esp_wifi_set_channel(ROBOT_AP_CHANNEL, WIFI_SECOND_CHAN_NONE);
-
-  if (esp_now_init() != ESP_OK) {
-    Serial.println("ESP-NOW init failed");
-    return;
+class MyClientCallback : public BLEClientCallbacks {
+  void onConnect(BLEClient* pclient) {
   }
-
-  esp_now_peer_info_t peer = {};
-  memcpy(peer.peer_addr, BROADCAST_ADDR, sizeof(BROADCAST_ADDR));
-  peer.channel = ROBOT_AP_CHANNEL;
-  peer.ifidx = WIFI_IF_STA;
-  peer.encrypt = false;
-
-  esp_now_del_peer(BROADCAST_ADDR);
-  if (esp_now_add_peer(&peer) != ESP_OK) {
-    Serial.println("Failed to add ESP-NOW broadcast peer");
-    return;
+  void onDisconnect(BLEClient* pclient) {
+    connected = false;
+    Serial.println("Disconnected");
+    doScan = true;
   }
+};
 
-  s_espnow_ready = true;
-  Serial.println("Controller self-test ready on channel 1");
+bool connectToServer() {
+    Serial.print("Connecting to ");
+    Serial.println(myDevice->getAddress().toString().c_str());
+    
+    BLEClient* pClient = BLEDevice::createClient();
+    pClient->setClientCallbacks(new MyClientCallback());
+
+    if (!pClient->connect(myDevice)) return false;
+    Serial.println("Connected to server");
+
+    BLERemoteService* pRemoteService = pClient->getService(serviceUUID);
+    if (pRemoteService == nullptr) {
+      Serial.print("Failed to find service UUID: ");
+      Serial.println(serviceUUID.toString().c_str());
+      pClient->disconnect();
+      return false;
+    }
+
+    pRemoteCharacteristic = pRemoteService->getCharacteristic(charUUID);
+    if (pRemoteCharacteristic == nullptr) {
+      Serial.print("Failed to find characteristic UUID: ");
+      Serial.println(charUUID.toString().c_str());
+      pClient->disconnect();
+      return false;
+    }
+
+    connected = true;
+    return true;
 }
+
+class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
+  void onResult(BLEAdvertisedDevice advertisedDevice) {
+    if (advertisedDevice.getName() == "Curie-Robot") {
+      BLEDevice::getScan()->stop();
+      myDevice = new BLEAdvertisedDevice(advertisedDevice);
+      doConnect = true;
+      doScan = false;
+    }
+  }
+};
 
 static void run_test_step(void) {
   switch (s_step) {
@@ -141,20 +170,41 @@ static void run_test_step(void) {
 void setup() {
   Serial.begin(115200);
   delay(200);
-  Serial.println("Curie controller self-test boot");
-  init_espnow();
+  Serial.println("Curie BLE controller self-test boot");
+  
+  BLEDevice::init("");
+  BLEScan* pBLEScan = BLEDevice::getScan();
+  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+  pBLEScan->setInterval(1349);
+  pBLEScan->setWindow(449);
+  pBLEScan->setActiveScan(true);
+  pBLEScan->start(5, false);
+
   s_last_step_ms = millis();
 }
 
 void loop() {
-  if (!s_espnow_ready) {
-    delay(250);
-    return;
+  if (doConnect) {
+    if (connectToServer()) {
+      Serial.println("Ready to send.");
+    } else {
+      Serial.println("Failed to connect.");
+    }
+    doConnect = false;
   }
 
-  unsigned long now = millis();
-  if (now - s_last_step_ms >= 2500) {
-    run_test_step();
-    s_last_step_ms = now;
+  if (doScan) {
+    BLEDevice::getScan()->start(5, false);
+    doScan = false;
+  }
+
+  if (connected) {
+    unsigned long now = millis();
+    if (now - s_last_step_ms >= 2500) {
+      run_test_step();
+      s_last_step_ms = now;
+    }
+  } else {
+    delay(250);
   }
 }
