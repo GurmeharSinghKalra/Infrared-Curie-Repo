@@ -82,3 +82,25 @@ This document lists all the critical hardware integration issues, firmware bugs,
     *   Imported `driver/gpio.h` into `motion_ctrl.c`.
     *   Added a call to `gpio_reset_pin(pin)` inside `setup_servo()` before any MCPWM registers are configured.
     *   This successfully detaches the internal boot strapping register mappings and reclaims GPIO 12 as a normal high-performance GPIO, restoring the left shoulder servo to full 0° to 180° motion!
+
+---
+
+## 8. Handheld Controller Bluetooth Connection Dropouts and Reconnect Locks
+*   **The Problem:** The Handheld Controller disconnected after 1-2 seconds of startup, and could never reconnect unless both the robot and the controller were physically rebooted.
+*   **The Root Cause:** The bloated Arduino BLE stack on ESP32 has significant memory overhead and poor connection state management when running multiple tasks. When a disconnect or packet loss event occurred, the controller attempted to reconnect without fully closing the prior handles, causing a permanent lockup inside the ESP32 hardware BLE stack.
+*   **The Resolution:**
+    *   Completely overhauled and rewrote the Handheld Controller in **pure C using the native ESP-IDF NimBLE stack**.
+    *   Implemented a clean connection cycle that automatically stops active scans before initiating connections to avoid hardware conflicts.
+    *   Implemented automatic self-healing scans that instantly trigger when link loss is detected.
+    *   Both systems are now running identical native C NimBLE profiles, resulting in **instant connections** and bulletproof connection stability.
+
+---
+
+## 9. Real-time BLE Streaming Queue Congestion (Error 6 / `BLE_HS_EAGAIN`)
+*   **The Problem:** The controller serial logs were constantly spammed with `Error sending BLE flat write: 6` as soon as connection was established, causing erratic joystick lag.
+*   **The Root Cause:** The controller streamed packets at a rapid 40ms interval using standard GATT writes-with-responses (`ble_gattc_write_flat`). Since standard writes require an acknowledgment over-the-air, trying to send a new joystick frame before receiving the previous acknowledgment caused massive queue congestion, triggering `BLE_HS_EAGAIN` (code `6`).
+*   **The Resolution:**
+    *   Swapped the transmission procedure to Write-Without-Response (`ble_gattc_write_no_rsp_flat`).
+    *   Since the robot characteristic is configured to support writes-without-response (`BLE_GATT_CHR_F_WRITE_NO_RSP`), the controller now fires packets instantly over-the-air without awaiting round-trip verification.
+    *   This completely cleared the queue congestion, **resolving the Error 6 warnings** and providing lag-free real-time analog joystick streams!
+

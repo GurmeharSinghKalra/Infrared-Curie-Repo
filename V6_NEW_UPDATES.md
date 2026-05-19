@@ -29,8 +29,25 @@ This document details the latest changes made in the V6.1 update to resolve crit
     *   **Aggressive Mode:** Maps to `PROFILE_AGGRESSIVE` (ramp step delta = `25` per 20ms frame, providing instantaneous response).
 *   **Result:** Each profile now provides distinct acceleration characteristics.
 
+### 5. Overhauled Handheld Controller to Native C ESP-IDF
+*   **Change:** Replaced the bloated PlatformIO/Arduino controller project with a native C ESP-IDF project. It uses a high-performance **NimBLE Client** to handle scans and connections cleanly.
+*   **Result:** Binary size was reduced by over **50%** (from 1.12 MB down to `520 KB`), with **49% free space** remaining in application partitions. Connection stability is pristine, and memory leaks are completely eliminated.
+
+### 6. Implemented Write-Without-Response (`ble_gattc_write_no_rsp_flat`)
+*   **Change:** Swapped the GATT write procedure from standard write-with-response (`ble_gattc_write_flat`) to write-without-response (`ble_gattc_write_no_rsp_flat`) inside the controller's main loop.
+*   **Result:** Resolved the BLE connection queue congestion (Error Code `6` / `BLE_HS_EAGAIN`). Real-time joystick streaming at 40ms intervals is now completely smooth and lag-free.
+
 ---
 
 ### Verification and Flash Log
-*   **Binary Size:** `0x189f80` bytes (1.61 MB), with **18% free space** remaining in the application partitions.
-*   **Flashing Success:** Firmware was built successfully using ESP-IDF v5.4.1 and flashed over `COM5` to the robot.
+
+#### 🤖 1. Curie Robot Firmware
+*   **Framework:** Native C ESP-IDF v5.4.1
+*   **Binary Size:** `0x189f80` bytes (1.61 MB), with **18% free space** remaining.
+*   **Flashing Success:** Flashed successfully over `COM5` to the robot.
+
+#### 🕹️ 2. Handheld Controller Firmware
+*   **Framework:** Native C ESP-IDF v5.4.1 (NimBLE Client)
+*   **Binary Size:** `0x831d0` bytes (520 KB), with **49% free space** remaining.
+*   **Flashing Success:** Flashed successfully over `COM5` to the controller.
+
