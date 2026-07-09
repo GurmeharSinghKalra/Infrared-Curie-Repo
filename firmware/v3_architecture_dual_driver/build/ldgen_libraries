@@ -1,65 +1,162 @@
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/xtensa/libxtensa.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_ringbuf/libesp_ringbuf.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/efuse/libefuse.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_mm/libesp_mm.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/driver/libdriver.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_pm/libesp_pm.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/mbedtls/libmbedtls.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_bootloader_format/libesp_bootloader_format.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_app_format/libesp_app_format.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/bootloader_support/libbootloader_support.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_partition/libesp_partition.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/app_update/libapp_update.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/spi_flash/libspi_flash.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/pthread/libpthread.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_system/libesp_system.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_rom/libesp_rom.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/hal/libhal.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/log/liblog.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/heap/libheap.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/soc/libsoc.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_hw_support/libesp_hw_support.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/freertos/libfreertos.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/newlib/libnewlib.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/cxx/libcxx.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_common/libesp_common.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_timer/libesp_timer.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/app_trace/libapp_trace.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_event/libesp_event.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/nvs_flash/libnvs_flash.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_phy/libesp_phy.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/vfs/libvfs.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/lwip/liblwip.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_netif/libesp_netif.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/wpa_supplicant/libwpa_supplicant.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_coex/libesp_coex.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_wifi/libesp_wifi.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_gdbstub/libesp_gdbstub.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/unity/libunity.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/cmock/libcmock.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/console/libconsole.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/http_parser/libhttp_parser.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp-tls/libesp-tls.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_adc/libesp_adc.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_eth/libesp_eth.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_hid/libesp_hid.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/tcp_transport/libtcp_transport.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_http_client/libesp_http_client.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_http_server/libesp_http_server.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_https_ota/libesp_https_ota.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_lcd/libesp_lcd.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/protobuf-c/libprotobuf-c.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/protocomm/libprotocomm.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/esp_local_ctrl/libesp_local_ctrl.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/espcoredump/libespcoredump.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/wear_levelling/libwear_levelling.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/sdmmc/libsdmmc.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/fatfs/libfatfs.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/json/libjson.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/mqtt/libmqtt.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/nvs_sec_provider/libnvs_sec_provider.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/perfmon/libperfmon.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/spiffs/libspiffs.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/wifi_provisioning/libwifi_provisioning.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/u8g2/libu8g2.a
-/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/esp-idf/main/libmain.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/xtensa/libxtensa.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/cxx/libcxx.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/newlib/libnewlib.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/freertos/libfreertos.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_hw_support/libesp_hw_support.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/heap/libheap.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/log/liblog.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/soc/libsoc.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/hal/libhal.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_rom/libesp_rom.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_common/libesp_common.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_system/libesp_system.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/xtensa/libxtensa.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/spi_flash/libspi_flash.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/bootloader_support/libbootloader_support.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/mbedtls/libmbedtls.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_pm/libesp_pm.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_gpio/libesp_driver_gpio.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_timer/libesp_timer.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/lwip/liblwip.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/vfs/libvfs.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_uart/libesp_driver_uart.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_ringbuf/libesp_ringbuf.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_mm/libesp_mm.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/vfs/libvfs.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_vfs_console/libesp_vfs_console.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/mbedtls/mbedtls/library/libmbedtls.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/mbedtls/mbedtls/library/libmbedx509.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/mbedtls/mbedtls/library/libmbedcrypto.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/mbedtls/mbedtls/3rdparty/everest/libeverest.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/mbedtls/mbedtls/3rdparty/p256-m/libp256m.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_security/libesp_security.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/efuse/libefuse.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_partition/libesp_partition.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/app_update/libapp_update.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_app_format/libesp_app_format.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_bootloader_format/libesp_bootloader_format.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_gdbstub/libesp_gdbstub.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/driver/libdriver.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_pcnt/libesp_driver_pcnt.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_gptimer/libesp_driver_gptimer.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_spi/libesp_driver_spi.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_mcpwm/libesp_driver_mcpwm.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_i2s/libesp_driver_i2s.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_sdmmc/libesp_driver_sdmmc.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/sdmmc/libsdmmc.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_sdspi/libesp_driver_sdspi.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_sdio/libesp_driver_sdio.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_dac/libesp_driver_dac.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_rmt/libesp_driver_rmt.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_sdm/libesp_driver_sdm.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_i2c/libesp_driver_i2c.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_ledc/libesp_driver_ledc.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_twai/libesp_driver_twai.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_adc/libesp_adc.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_http_client/libesp_http_client.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_event/libesp_event.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/tcp_transport/libtcp_transport.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp-tls/libesp-tls.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/http_parser/libhttp_parser.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_http_server/libesp_http_server.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/nvs_flash/libnvs_flash.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/mbedtls/libmbedtls.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_wifi/libesp_wifi.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_phy/libesp_phy.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_netif/libesp_netif.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/wpa_supplicant/libwpa_supplicant.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_coex/libesp_coex.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_https_ota/libesp_https_ota.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_security/libesp_security.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/pthread/libpthread.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_gpio/libesp_driver_gpio.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_pm/libesp_pm.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_app_format/libesp_app_format.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_bootloader_format/libesp_bootloader_format.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/app_update/libapp_update.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_partition/libesp_partition.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/efuse/libefuse.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/bootloader_support/libbootloader_support.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_mm/libesp_mm.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/spi_flash/libspi_flash.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_system/libesp_system.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_common/libesp_common.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_rom/libesp_rom.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/hal/libhal.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/log/liblog.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/heap/libheap.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/soc/libsoc.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_hw_support/libesp_hw_support.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/freertos/libfreertos.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/newlib/libnewlib.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/pthread/libpthread.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/cxx/libcxx.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_timer/libesp_timer.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_gptimer/libesp_driver_gptimer.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_ringbuf/libesp_ringbuf.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_uart/libesp_driver_uart.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/app_trace/libapp_trace.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_event/libesp_event.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/nvs_flash/libnvs_flash.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_phy/libesp_phy.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_vfs_console/libesp_vfs_console.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/lwip/liblwip.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_netif/libesp_netif.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/wpa_supplicant/libwpa_supplicant.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_coex/libesp_coex.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_wifi/libesp_wifi.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_spi/libesp_driver_spi.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_gdbstub/libesp_gdbstub.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/unity/libunity.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/cmock/libcmock.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/unity/libunity.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/console/libconsole.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_pcnt/libesp_driver_pcnt.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_mcpwm/libesp_driver_mcpwm.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_i2s/libesp_driver_i2s.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/sdmmc/libsdmmc.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_sdmmc/libesp_driver_sdmmc.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_sdspi/libesp_driver_sdspi.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_sdio/libesp_driver_sdio.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_dac/libesp_driver_dac.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_rmt/libesp_driver_rmt.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_sdm/libesp_driver_sdm.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_i2c/libesp_driver_i2c.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_ledc/libesp_driver_ledc.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_twai/libesp_driver_twai.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/driver/libdriver.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/http_parser/libhttp_parser.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp-tls/libesp-tls.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_adc/libesp_adc.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_cam/libesp_driver_cam.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_driver_touch_sens/libesp_driver_touch_sens.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_eth/libesp_eth.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_hid/libesp_hid.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/tcp_transport/libtcp_transport.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_http_client/libesp_http_client.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_http_server/libesp_http_server.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_https_ota/libesp_https_ota.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_https_server/libesp_https_server.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_lcd/libesp_lcd.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/protobuf-c/libprotobuf-c.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/protocomm/libprotocomm.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/protobuf-c/libprotobuf-c.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/console/libconsole.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_local_ctrl/libesp_local_ctrl.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/protocomm/libprotocomm.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/esp_https_server/libesp_https_server.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/espcoredump/libespcoredump.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/wear_levelling/libwear_levelling.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/fatfs/libfatfs.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/wear_levelling/libwear_levelling.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/json/libjson.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/mqtt/libmqtt.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/nvs_sec_provider/libnvs_sec_provider.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/perfmon/libperfmon.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/rt/librt.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/spiffs/libspiffs.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/wifi_provisioning/libwifi_provisioning.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/json/libjson.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/u8g2/libu8g2.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/main/libmain.a
+C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/esp-idf/u8g2/libu8g2.a

@@ -3,20 +3,25 @@
 
 cmake_minimum_required(VERSION 3.5)
 
+# If CMAKE_DISABLE_SOURCE_CHANGES is set to true and the source directory is an
+# existing directory in our source tree, calling file(MAKE_DIRECTORY) on it
+# would cause a fatal error, even though it would be a no-op.
+if(NOT EXISTS "C:/Users/ameri/esp/v5.5.2/esp-idf/components/bootloader/subproject")
+  file(MAKE_DIRECTORY "C:/Users/ameri/esp/v5.5.2/esp-idf/components/bootloader/subproject")
+endif()
 file(MAKE_DIRECTORY
-  "/home/gurmehar/esp/esp-idf/components/bootloader/subproject"
-  "/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/bootloader"
-  "/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/bootloader-prefix"
-  "/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/bootloader-prefix/tmp"
-  "/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/bootloader-prefix/src/bootloader-stamp"
-  "/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/bootloader-prefix/src"
-  "/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/bootloader-prefix/src/bootloader-stamp"
+  "C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/bootloader"
+  "C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/bootloader-prefix"
+  "C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/bootloader-prefix/tmp"
+  "C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/bootloader-prefix/src/bootloader-stamp"
+  "C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/bootloader-prefix/src"
+  "C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/bootloader-prefix/src/bootloader-stamp"
 )
 
 set(configSubDirs )
 foreach(subDir IN LISTS configSubDirs)
-    file(MAKE_DIRECTORY "/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
+    file(MAKE_DIRECTORY "C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
 endforeach()
 if(cfgdir)
-  file(MAKE_DIRECTORY "/home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
+  file(MAKE_DIRECTORY "C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
 endif()

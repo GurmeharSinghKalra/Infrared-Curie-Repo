@@ -1,2 +1,2 @@
-source /home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/gdbinit/symbols
-source /home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/build/gdbinit/connect
+source C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/gdbinit/symbols
+source C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/build/gdbinit/connect

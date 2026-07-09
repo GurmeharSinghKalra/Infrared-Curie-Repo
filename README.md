@@ -1,30 +1,91 @@
 # Infrared Curie
-**An Advanced ESP32-Based Robotic Controller Platform**
 
-Infrared Curie is a highly expressive, web-controlled, and remotely operated robot built on the ESP-IDF framework. It features dual OLED eyes, a MAX7219 LED matrix mouth, a 4-servo robotic arm system, and a robust dual-mode WiFi stack (Access Point + Station mode) with real-time WebSocket telemetry.
+Infrared Curie is an ESP32-based expressive robot platform with:
 
-## Features
-- **Expressive Faces**: 8 built-in expressions (Happy, Sad, Angry, Wink, etc.) using dual I2C OLED screens.
-- **Custom LED Matrix Designer**: A real-time WebSocket-synced 16x8 matrix designer in the Web UI.
-- **Over-The-Air (OTA) Updates**: Flash new `.bin` firmware directly through the browser.
-- **Dual Mode WiFi**: Operates as a standalone Access Point out of the box, with the ability to scan and connect to local WiFi networks.
-- **Physical Remote Support**: Supports an external ESP32 physical remote controller via WebSockets.
-- **Dual-Architecture Firmware**:
-  - `v2_architecture_4_driver`: Legacy code supporting 4 independent motor drivers (Holonomic).
-  - `v3_architecture_dual_driver`: Current stable code optimized for 2 BTS7960 drivers (Differential Tank Steer).
+- dual OLED eyes
+- dual 8x8 MAX7219 mouth
+- four DC drive motors
+- shoulder servos
+- AP-first local dashboard
+- handheld ESP32 controller over BLE
 
-## Repository Structure
-- `docs/`: Comprehensive technical documentation, code explanations, and development history.
-- `firmware/`: The ESP-IDF C codebase (split by V2 and V3 architectures).
-- `dashboard_ui/`: The built React/Vite source assets embedded into the ESP32.
-- `remote_controller/`: The Arduino sketch for the standalone physical remote.
+Legacy code in this repository is from Google Antigravity; the current V6 robot/controller targets and release bundle were added by Codex.
 
-## Getting Started
-To flash the firmware to an ESP32, you will need the ESP-IDF v5.2 environment:
-```bash
-cd firmware/v3_architecture_dual_driver
+## Current primary firmware targets
+
+### Robot
+
+- source: `firmware/v6_doit30_clean_rewrite`
+- board: `DOIT ESP32 DevKit V1 (30-pin)`
+- framework: `ESP-IDF 5.5.x`
+
+### Controller
+
+- source: `remote_controller`
+- board: `ESP32 DevKit V1 (30-pin)`
+- framework: `ESP-IDF 5.5.x`
+- transport: BLE
+
+## Current release artifacts
+
+Prebuilt binaries and flashing scripts live in:
+
+- `artifacts/release_bundle`
+- `artifacts/curie_dual_esp32_flash_bundle.zip`
+
+## Main features
+
+- AP-first robot networking
+- local dashboard at `http://192.168.4.1`
+- WebSocket command channel
+- OTA update endpoint
+- BLE controller receiver
+- dual-eye + eyebrow + mouth face engine
+- paged controller expression input
+- kid-facing controller OLED UI with auto-detected SSD1306 address support
+
+## Repository structure
+
+- `firmware/`
+  - robot firmware targets
+- `remote_controller/`
+  - final handheld BLE controller firmware
+- `artifacts/`
+  - release binaries and flash bundles
+- `docs/`
+  - pinouts, flashing guide, and technical notes
+
+## Start here
+
+- robot pinout: `docs/ROBOT_PINOUT.md`
+- controller pinout: `docs/CONTROLLER_PINOUT.md`
+- flashing guide: `docs/FLASHING_GUIDE.md`
+- current robot firmware notes: `firmware/v6_doit30_clean_rewrite/README.md`
+
+## Controller overview
+
+- joystick = analog drive
+- D-pad = digital drive override
+- hold joystick press + D-pad = arm/safety actions
+- keypad = expression pages
+- OLED = connection, expression, speed, and action feedback
+
+## Robot build
+
+```powershell
+$env:IDF_TOOLS_PATH='C:\Espressif'
+$env:IDF_PYTHON_ENV_PATH='C:\Espressif\python_env\idf5.5_py3.11_env'
+& 'C:\Users\ameri\esp\v5.5.2\esp-idf\export.ps1'
+cd firmware/v6_doit30_clean_rewrite
 idf.py build
-idf.py -p /dev/ttyUSB0 flash monitor
 ```
 
-For full documentation, please refer to the `docs/` folder.
+## Robot flash
+
+```powershell
+$env:IDF_TOOLS_PATH='C:\Espressif'
+$env:IDF_PYTHON_ENV_PATH='C:\Espressif\python_env\idf5.5_py3.11_env'
+& 'C:\Users\ameri\esp\v5.5.2\esp-idf\export.ps1'
+cd firmware/v6_doit30_clean_rewrite
+idf.py -p COM5 flash monitor
+```

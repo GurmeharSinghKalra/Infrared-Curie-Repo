@@ -1,8 +1,0 @@
-CMake Error at /home/gurmehar/esp/esp-idf/tools/cmake/project.cmake:414 (message):
-  Directory specified in EXTRA_COMPONENT_DIRS doesn't exist:
-  /home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/components
-Call Stack (most recent call first):
-  /home/gurmehar/esp/esp-idf/tools/cmake/project.cmake:498 (__project_init)
-  CMakeLists.txt:5 (project)
-
-

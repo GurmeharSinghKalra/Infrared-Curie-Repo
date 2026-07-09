@@ -1,7 +1,9 @@
-/* * Data converted from /home/gurmehar/.gemini/antigravity/playground/infrared-curie/firmware/idf_robot_v2/main/dashboard/style.css
+/* * Data converted from C:/Users/ameri/Documents/New project/Infrared-Curie-Repo/firmware/v3_architecture_dual_driver/main/dashboard/style.css
  */
 .data
+#if !defined (__APPLE__) && !defined (__linux__)
 .section .rodata.embedded
+#endif
 
 .global style_css
 style_css:
@@ -4226,7 +4228,7 @@ _binary_style_css_start: /* for objcopy compatibility */
 .byte 0x5c, 0x3d, 0x72, 0x69, 0x67, 0x68, 0x74, 0x5c, 0x5d, 0x5f, 0x5c, 0x26, 0x5c, 0x5d, 0x5c, 0x3a
 .byte 0x63, 0x75, 0x72, 0x73, 0x6f, 0x72, 0x2d, 0x65, 0x2d, 0x72, 0x65, 0x73, 0x69, 0x7a, 0x65, 0x7b
 .byte 0x63, 0x75, 0x72, 0x73, 0x6f, 0x72, 0x3a, 0x65, 0x2d, 0x72, 0x65, 0x73, 0x69, 0x7a, 0x65, 0x7d
-.byte 0x0a
+.byte 0x0d, 0x0a
 
 .global _binary_style_css_end
 _binary_style_css_end: /* for objcopy compatibility */
@@ -4234,4 +4236,8 @@ _binary_style_css_end: /* for objcopy compatibility */
 
 .global style_css_length
 style_css_length:
-.word 67489
+.long 67490
+
+#if defined (__linux__)
+.section .note.GNU-stack,"",@progbits
+#endif
